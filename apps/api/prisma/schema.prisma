@@ -1,0 +1,249 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Users ────────────────────────────────────────────────────────────────────
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String
+  passwordHash String
+  avatarUrl    String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  memberships     WorkspaceMember[]
+  refreshTokens   RefreshToken[]
+  chatSessions    ChatSession[]
+  sharedSessions  ChatSession[]  @relation("SharedSessions")
+  sentMessages    ChatMessage[]  @relation("MessageSender")
+  documents       Document[]
+  analyticsEvents AnalyticsEvent[]
+  sentInvites     WorkspaceInvite[]
+
+  @@map("users")
+}
+
+// ─── Workspaces (Multi-tenant + BYOK-ready) ──────────────────────────────────
+
+model Workspace {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  plan      Plan     @default(FREE)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // ★ BYOK fields — workspace-level provider overrides
+  aiProvider        String? // 'gemini' | 'openai' | 'claude'
+  aiApiKey          String? // encrypted workspace API key
+  embeddingProvider String? // embedding provider override
+  embeddingApiKey   String? // encrypted embedding key
+  aiLastTested      DateTime?
+  aiConnectionStatus String? // 'CONNECTED' | 'FAILED' | 'NOT_CONFIGURED'
+
+  members         WorkspaceMember[]
+  documents       Document[]
+  chatSessions    ChatSession[]
+  aiSettings      WorkspaceAiSettings?
+  analyticsEvents AnalyticsEvent[]
+  invites         WorkspaceInvite[]
+
+  @@map("workspaces")
+}
+
+model WorkspaceAiSettings {
+  id           String    @id @default(cuid())
+  workspaceId  String    @unique
+  workspace    Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  systemPrompt String?
+  maxTokens    Int       @default(2000)
+  temperature  Float     @default(0.3)
+  topKRetrieve Int       @default(5)
+  updatedAt    DateTime  @updatedAt
+
+  @@map("workspace_ai_settings")
+}
+
+// ─── Members & RBAC ──────────────────────────────────────────────────────────
+
+model WorkspaceMember {
+  id          String        @id @default(cuid())
+  userId      String
+  workspaceId String
+  role        WorkspaceRole @default(MEMBER)
+  joinedAt    DateTime      @default(now())
+
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, workspaceId])
+  @@map("workspace_members")
+}
+
+// ─── Workspace Invitations ────────────────────────────────────────────────────
+
+model WorkspaceInvite {
+  id          String        @id @default(cuid())
+  email       String
+  workspaceId String
+  role        WorkspaceRole @default(MEMBER)
+  invitedById String
+  createdAt   DateTime      @default(now())
+
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  invitedBy   User      @relation(fields: [invitedById], references: [id], onDelete: Cascade)
+
+  @@unique([email, workspaceId])
+  @@map("workspace_invites")
+}
+
+model RefreshToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("refresh_tokens")
+}
+
+// ─── Documents ───────────────────────────────────────────────────────────────
+
+model Document {
+  id               String         @id @default(cuid())
+  workspaceId      String
+  name             String
+  originalName     String
+  mimeType         String
+  sizeBytes        Int
+  s3Key            String
+  status           DocumentStatus @default(PENDING)
+  pageCount        Int?
+  errorMessage     String?
+  uploadedById     String
+  extractionMethod String?        // 'TEXT_EXTRACTION' | 'OCR'
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  workspace  Workspace       @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  uploadedBy User            @relation(fields: [uploadedById], references: [id], onDelete: Cascade)
+  chunks     DocumentChunk[]
+
+  @@map("documents")
+}
+
+model DocumentChunk {
+  id         String   @id @default(cuid())
+  documentId String
+  chunkIndex Int
+  content    String
+  tokenCount Int
+  pageNumber Int      @default(1)   // Actual source page number (1-indexed)
+  qdrantId   String
+  createdAt  DateTime @default(now())
+
+  document Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  @@map("document_chunks")
+}
+
+// ─── Chat ─────────────────────────────────────────────────────────────────────
+
+model ChatSession {
+  id          String                @id @default(cuid())
+  workspaceId String
+  userId      String
+  title       String                @default("New Chat")
+  visibility  DiscussionVisibility  @default(PRIVATE)
+  sharedAt    DateTime?
+  sharedById  String?
+  createdAt   DateTime              @default(now())
+  updatedAt   DateTime              @updatedAt
+
+  workspace Workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sharedBy  User?         @relation("SharedSessions", fields: [sharedById], references: [id])
+  messages  ChatMessage[]
+
+  @@map("chat_sessions")
+}
+
+model ChatMessage {
+  id            String      @id @default(cuid())
+  sessionId     String
+  role          MessageRole
+  content       String
+  tokenCount    Int?
+  provider      String?
+  retrievedFrom String[]
+  senderId      String?     // userId for USER messages; null for ASSISTANT
+  createdAt     DateTime    @default(now())
+
+  session  ChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  sender   User?       @relation("MessageSender", fields: [senderId], references: [id])
+
+  @@map("chat_messages")
+}
+
+// ─── Analytics ───────────────────────────────────────────────────────────────
+
+model AnalyticsEvent {
+  id           String   @id @default(cuid())
+  workspaceId  String
+  userId       String
+  type         String   // 'CHAT' | 'SEARCH' | 'UPLOAD' | 'DELETE' | 'DOCUMENT_REFERENCE'
+  queryText    String?  // The user's search query or question
+  topicTag     String?  // The AI-classified core topic (e.g. "Dental Insurance")
+  matchScore   Float?   // Cosine similarity score
+  isSuccess    Boolean  @default(true) // false if matchScore < 0.65
+  documentId   String?  // Referenced document ID (for DOCUMENT_REFERENCE events)
+  documentName String?  // Referenced document name (for DOCUMENT_REFERENCE events)
+  sessionId    String?  // Optional link to chat session (for DOCUMENT_REFERENCE events)
+  createdAt    DateTime @default(now())
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("analytics_events")
+}
+
+// ─── Enums ────────────────────────────────────────────────────────────────────
+
+enum DiscussionVisibility {
+  PRIVATE
+  SHARED
+}
+
+enum WorkspaceRole {
+  OWNER
+  ADMIN
+  MEMBER
+}
+
+enum Plan {
+  FREE
+  PRO
+  ENTERPRISE
+}
+
+enum DocumentStatus {
+  PENDING
+  PROCESSING
+  READY
+  FAILED
+}
+
+enum MessageRole {
+  USER
+  ASSISTANT
+  SYSTEM
+}
