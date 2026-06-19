@@ -7,11 +7,14 @@ Built as a **modular monorepo** with **Next.js 14** (App Router), **NestJS**, **
 ---
 
 ## 📸 Application Showcases
-*(Place your screenshots or GIFs here to grab recruiter attention immediately!)*
 
-| 👥 Shared Discussion Board | ⚙️ Multi-Provider BYOK Settings |
+| 👥 Shared Workspace Discussions | 💬 Private AI Discussions |
 |:---:|:---:|
-| ![Shared Discussions Screen](https://github.com/lavneetsh/Damora-AI/issues/1#issue-4699109888)
+| ![Shared Discussions Screen](https://github.com/user-attachments/assets/2f5cb9bc-2814-42b7-98f1-cb61ce65e6cc) | ![Private Discussions Screen](https://github.com/user-attachments/assets/5fa5ee71-7bbc-4da7-978b-69bbea2a3211) |
+
+| 📊 Workspace Analytics & Knowledge Gaps | ⚙️ Bring Your Own Key (BYOK) Security |
+|:---:|:---:|
+| ![Analytics Dashboard Screen](https://github.com/user-attachments/assets/47ddb4da-bf7e-426c-909a-c88151e7d185) | ![BYOK Configuration Screen](https://github.com/user-attachments/assets/ed5fba97-7259-4f0e-86df-ba7afb3d35f1) |
 
 ---
 
