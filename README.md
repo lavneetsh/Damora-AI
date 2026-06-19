@@ -11,7 +11,7 @@ Built as a **modular monorepo** with **Next.js 14** (App Router), **NestJS**, **
 
 | 👥 Shared Discussion Board | ⚙️ Multi-Provider BYOK Settings |
 |:---:|:---:|
-| ![Shared Discussions Screen](https://raw.githubusercontent.com/lavneetsh/DamoraAi/main/screenshots/discussions.png) | ![BYOK Settings Screen](https://raw.githubusercontent.com/lavneetsh/DamoraAi/main/screenshots/settings.png) |
+| ![Shared Discussions Screen](https://github.com/lavneetsh/Damora-AI/issues/1#issue-4699109888)
 
 ---
 
