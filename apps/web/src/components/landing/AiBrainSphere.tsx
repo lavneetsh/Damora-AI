@@ -1,23 +1,8 @@
 'use client';
 
-import { useRef, useMemo, useState } from 'react';
+import React, { useState, useEffect, Component, ReactNode } from 'react';
 import { motion } from 'framer-motion';
 import dynamic from 'next/dynamic';
-
-// Dynamically import Three.js components — no SSR, lazy loaded
-const ThreeCanvas = dynamic(
-  () => import('./AiBrainCanvas'),
-  {
-    ssr: false,
-    loading: () => (
-      <div className="w-full h-[400px] md:h-[500px] flex items-center justify-center">
-        <div className="text-sm text-slate-500 font-mono animate-pulse">
-          Loading 3D visualization...
-        </div>
-      </div>
-    ),
-  }
-);
 
 const clusters = [
   { name: 'Finance', color: '#3b8ef8', docs: '847 vectors' },
@@ -27,8 +12,92 @@ const clusters = [
   { name: 'Sales', color: '#ec4899', docs: '634 vectors' },
 ];
 
+// Fallback 2D Vector Sphere component
+function Fallback2DSphere({ activeCluster }: { activeCluster: string | null }) {
+  return (
+    <div className="w-full h-[380px] md:h-[480px] rounded-2xl overflow-hidden bg-black/20 border border-white/[0.04] flex items-center justify-center p-6 relative">
+      {/* Background glow */}
+      <div className="absolute inset-0 bg-gradient-to-tr from-[#6c3bfa]/10 via-transparent to-[#3b8ef8]/10 pointer-events-none" />
+
+      {/* SVG Cluster representation */}
+      <svg className="w-full h-full max-w-[340px] max-h-[340px]" viewBox="0 0 200 200">
+        <circle cx="100" cy="100" r="80" fill="none" stroke="rgba(108,59,250,0.15)" strokeWidth="1" strokeDasharray="4 4" />
+        <circle cx="100" cy="100" r="50" fill="none" stroke="rgba(59,142,248,0.15)" strokeWidth="1" strokeDasharray="3 3" />
+        
+        {/* Animated Nodes */}
+        {clusters.map((cluster, i) => {
+          const angle = (i * 2 * Math.PI) / clusters.length;
+          const r = 55;
+          const cx = 100 + r * Math.cos(angle);
+          const cy = 100 + r * Math.sin(angle);
+          const isActive = activeCluster === cluster.name;
+
+          return (
+            <g key={cluster.name}>
+              <line x1="100" y1="100" x2={cx} y2={cy} stroke={isActive ? cluster.color : 'rgba(255,255,255,0.08)'} strokeWidth={isActive ? 1.5 : 0.8} />
+              <circle
+                cx={cx}
+                cy={cy}
+                r={isActive ? 8 : 5}
+                fill={cluster.color}
+                opacity={isActive ? 1 : 0.7}
+                className="transition-all duration-300"
+              />
+            </g>
+          );
+        })}
+        {/* Core */}
+        <circle cx="100" cy="100" r="12" fill="url(#coreGradient)" />
+        <defs>
+          <radialGradient id="coreGradient">
+            <stop offset="0%" stopColor="#6c3bfa" />
+            <stop offset="100%" stopColor="#3b8ef8" />
+          </radialGradient>
+        </defs>
+      </svg>
+    </div>
+  );
+}
+
+// React Error Boundary for 3D Canvas
+class ThreeErrorBoundary extends Component<{ children: ReactNode; activeCluster: string | null }, { hasError: boolean }> {
+  constructor(props: { children: ReactNode; activeCluster: string | null }) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error: Error) {
+    console.warn('WebGL/Three.js Canvas encountered an issue, falling back to 2D vector display:', error);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return <Fallback2DSphere activeCluster={this.props.activeCluster} />;
+    }
+    return this.props.children;
+  }
+}
+
+// Dynamically import Three.js components with ssr: false
+const ThreeCanvas = dynamic(
+  () => import('./AiBrainCanvas'),
+  {
+    ssr: false,
+    loading: () => <Fallback2DSphere activeCluster={null} />,
+  }
+);
+
 export default function AiBrainSphere() {
   const [activeCluster, setActiveCluster] = useState<string | null>(null);
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   return (
     <section className="relative z-10 py-24 md:py-32 px-6 md:px-12 overflow-hidden">
@@ -63,7 +132,13 @@ export default function AiBrainSphere() {
             transition={{ duration: 0.8 }}
             className="flex-1 w-full"
           >
-            <ThreeCanvas activeCluster={activeCluster} />
+            {isMounted ? (
+              <ThreeErrorBoundary activeCluster={activeCluster}>
+                <ThreeCanvas activeCluster={activeCluster} />
+              </ThreeErrorBoundary>
+            ) : (
+              <Fallback2DSphere activeCluster={activeCluster} />
+            )}
           </motion.div>
 
           {/* Cluster legend */}

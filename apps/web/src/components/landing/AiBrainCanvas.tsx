@@ -9,12 +9,12 @@ interface AiBrainCanvasProps {
   activeCluster: string | null;
 }
 
-const CLUSTERS = [
-  { name: 'Finance', color: new THREE.Color('#3b8ef8'), center: [0.6, 0.8, 0.2] },
-  { name: 'HR', color: new THREE.Color('#10b981'), center: [-0.7, 0.5, 0.6] },
-  { name: 'Legal', color: new THREE.Color('#f59e0b'), center: [-0.3, -0.7, 0.5] },
-  { name: 'Engineering', color: new THREE.Color('#6c3bfa'), center: [0.5, -0.3, -0.7] },
-  { name: 'Sales', color: new THREE.Color('#ec4899'), center: [-0.5, 0.2, -0.8] },
+const CLUSTER_DEFS = [
+  { name: 'Finance', hex: '#3b8ef8', center: [0.6, 0.8, 0.2] },
+  { name: 'HR', hex: '#10b981', center: [-0.7, 0.5, 0.6] },
+  { name: 'Legal', hex: '#f59e0b', center: [-0.3, -0.7, 0.5] },
+  { name: 'Engineering', hex: '#6c3bfa', center: [0.5, -0.3, -0.7] },
+  { name: 'Sales', hex: '#ec4899', center: [-0.5, 0.2, -0.8] },
 ] as const;
 
 const POINT_COUNT = 1500;
@@ -23,52 +23,43 @@ function EmbeddingSphere({ activeCluster }: AiBrainCanvasProps) {
   const meshRef = useRef<THREE.Points>(null);
   const materialRef = useRef<THREE.PointsMaterial>(null);
 
-  const { positions, colors, clusterIndices } = useMemo(() => {
+  const { positions, colors } = useMemo(() => {
     const pos = new Float32Array(POINT_COUNT * 3);
     const col = new Float32Array(POINT_COUNT * 3);
-    const indices = new Array(POINT_COUNT);
 
     for (let i = 0; i < POINT_COUNT; i++) {
-      // Assign to a random cluster
-      const ci = Math.floor(Math.random() * CLUSTERS.length);
-      const cluster = CLUSTERS[ci];
-      indices[i] = ci;
+      const ci = Math.floor(Math.random() * CLUSTER_DEFS.length);
+      const cluster = CLUSTER_DEFS[ci];
+      const clusterColor = new THREE.Color(cluster.hex);
 
-      // Generate point on a sphere with cluster bias
       const theta = Math.random() * Math.PI * 2;
       const phi = Math.acos(2 * Math.random() - 1);
       const r = 1.8 + (Math.random() - 0.5) * 0.6;
 
-      // Base position on sphere
       const bx = r * Math.sin(phi) * Math.cos(theta);
       const by = r * Math.sin(phi) * Math.sin(theta);
       const bz = r * Math.cos(phi);
 
-      // Bias towards cluster center (subtle grouping)
       const bias = 0.5 + Math.random() * 0.3;
       pos[i * 3] = bx + cluster.center[0] * bias;
       pos[i * 3 + 1] = by + cluster.center[1] * bias;
       pos[i * 3 + 2] = bz + cluster.center[2] * bias;
 
-      // Color
-      col[i * 3] = cluster.color.r;
-      col[i * 3 + 1] = cluster.color.g;
-      col[i * 3 + 2] = cluster.color.b;
+      col[i * 3] = clusterColor.r;
+      col[i * 3 + 1] = clusterColor.g;
+      col[i * 3 + 2] = clusterColor.b;
     }
 
-    return { positions: pos, colors: col, clusterIndices: indices };
+    return { positions: pos, colors: col };
   }, []);
 
-  // Rotate slowly
   useFrame((_, delta) => {
     if (meshRef.current) {
       meshRef.current.rotation.y += delta * 0.08;
       meshRef.current.rotation.x += delta * 0.02;
     }
 
-    // Highlight active cluster by adjusting point sizes
     if (materialRef.current) {
-      // Base size with subtle pulse when cluster is active
       materialRef.current.size = activeCluster ? 2.5 : 2;
     }
   });
