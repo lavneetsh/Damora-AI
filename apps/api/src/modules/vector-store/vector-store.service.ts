@@ -46,9 +46,29 @@ export class VectorStoreService implements OnModuleInit {
 
   /**
    * Lightweight connectivity check used by the health endpoint.
-   * Throws if Qdrant is unreachable.
+   * Uses direct native fetch when QDRANT_API_KEY is set to provide clean
+   * HTTP status diagnostics (e.g. 401 Unauthorized vs 200 OK).
    */
   async ping(): Promise<void> {
+    const rawUrl = this.config.get<string>('QDRANT_URL', 'http://localhost:6333');
+    const url = rawUrl.trim().replace(/\/$/, '');
+    const apiKey = this.config.get<string>('QDRANT_API_KEY');
+
+    if (apiKey) {
+      const res = await fetch(`${url}/collections`, {
+        method: 'GET',
+        headers: {
+          'api-key': apiKey,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!res.ok) {
+        throw new Error(`Qdrant Cloud returned HTTP ${res.status} (${res.statusText || 'Error'})`);
+      }
+      return;
+    }
+
     await this.client.getCollections();
   }
 
