@@ -1,0 +1,103 @@
+# render.yaml — Damora AI Infrastructure as Code
+# Render reads this file from the root of your repo on every deploy.
+# Docs: https://render.com/docs/blueprint-spec
+
+services:
+  - type: web
+    name: damora-api
+    runtime: node
+    region: oregon  # choose the region closest to your users
+
+    # ── Build ─────────────────────────────────────────────────────────
+    buildCommand: |
+      npm install -g pnpm@11 &&
+      pnpm install --frozen-lockfile &&
+      pnpm --filter @damora/api run prisma:generate &&
+      pnpm --filter @damora/api run build
+
+    # ── Start ─────────────────────────────────────────────────────────
+    # Runs Prisma migrations BEFORE starting the app.
+    # If the migration fails, the app never starts — protecting against
+    # starting with a broken schema.
+    startCommand: |
+      pnpm --filter @damora/api exec prisma migrate deploy &&
+      pnpm --filter @damora/api run start
+
+    # ── Health Check ──────────────────────────────────────────────────
+    # Render will mark the deploy as failed if this returns non-200.
+    healthCheckPath: /api/health
+
+    # ── Plan ──────────────────────────────────────────────────────────
+    plan: free
+
+    # ── Auto-Deploy ───────────────────────────────────────────────────
+    # Render will automatically redeploy whenever you push to main.
+    autoDeploy: true
+
+    # ── Environment Variables ─────────────────────────────────────────
+    # Set values in the Render Dashboard (not here, to keep secrets safe).
+    # This section defines the KEYS Render expects.
+    envVars:
+      - key: NODE_ENV
+        value: production
+
+      - key: API_PORT
+        value: 10000  # Render always binds to port 10000
+
+      # CORS — set to your Vercel frontend URL
+      - key: FRONTEND_URL
+        sync: false  # set manually in dashboard
+
+      # Database — set to your Neon connection string
+      - key: DATABASE_URL
+        sync: false
+
+      # Auth
+      - key: JWT_ACCESS_SECRET
+        generateValue: true  # Render auto-generates a secure random value
+      - key: JWT_REFRESH_SECRET
+        generateValue: true
+      - key: JWT_ACCESS_EXPIRES
+        value: 15m
+      - key: JWT_REFRESH_EXPIRES
+        value: 7d
+
+      # Encryption
+      - key: ENCRYPTION_KEY
+        generateValue: true
+
+      # AI Providers — set in dashboard
+      - key: AI_PROVIDER
+        value: gemini
+      - key: EMBEDDING_PROVIDER
+        value: gemini
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: ANTHROPIC_API_KEY
+        sync: false
+
+      # Cloudflare R2 Storage
+      - key: STORAGE_ENDPOINT
+        sync: false
+      - key: STORAGE_ACCESS_KEY
+        sync: false
+      - key: STORAGE_SECRET_KEY
+        sync: false
+      - key: STORAGE_BUCKET
+        value: damora-docs
+      - key: STORAGE_USE_SSL
+        value: true
+      - key: STORAGE_REGION
+        value: auto
+
+      # Redis (Upstash)
+      - key: REDIS_URL
+        sync: false
+
+      # Qdrant Cloud
+      - key: QDRANT_URL
+        sync: false
+      - key: QDRANT_API_KEY
+        sync: false

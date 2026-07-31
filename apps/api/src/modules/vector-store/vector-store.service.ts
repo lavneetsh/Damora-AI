@@ -21,7 +21,8 @@ export class VectorStoreService implements OnModuleInit {
 
   constructor(private readonly config: ConfigService) {
     const url = this.config.get<string>('QDRANT_URL', 'http://localhost:6333');
-    this.client = new QdrantClient({ url });
+    const apiKey = this.config.get<string>('QDRANT_API_KEY'); // undefined in local dev, required for Qdrant Cloud
+    this.client = new QdrantClient({ url, ...(apiKey ? { apiKey } : {}) });
   }
 
   async onModuleInit() {
@@ -34,6 +35,16 @@ export class VectorStoreService implements OnModuleInit {
         `⚠️  Qdrant not reachable at startup — ${err}. Will retry on first use.`,
       );
     }
+  }
+
+  // ─── Ping (Health Check) ──────────────────────────────────────────────────
+
+  /**
+   * Lightweight connectivity check used by the health endpoint.
+   * Throws if Qdrant is unreachable.
+   */
+  async ping(): Promise<void> {
+    await this.client.getCollections();
   }
 
   // ─── Collection Management ────────────────────────────────────────────────

@@ -51,16 +51,26 @@ export class StorageService implements OnModuleInit {
   private async ensureBucket() {
     try {
       await this.s3.send(new HeadBucketCommand({ Bucket: this.bucket }));
-      this.logger.log(`✅ MinIO bucket "${this.bucket}" already exists`);
+      this.logger.log(`✅ Storage bucket "${this.bucket}" already exists`);
     } catch {
       // Bucket does not exist — create it
       try {
         await this.s3.send(new CreateBucketCommand({ Bucket: this.bucket }));
-        this.logger.log(`✅ MinIO bucket "${this.bucket}" created`);
+        this.logger.log(`✅ Storage bucket "${this.bucket}" created`);
       } catch (createErr) {
-        this.logger.error(`❌ Failed to create MinIO bucket: ${createErr}`);
+        this.logger.error(`❌ Failed to create storage bucket: ${createErr}`);
       }
     }
+  }
+
+  // ─── Ping (Health Check) ───────────────────────────────────────────────────────────────
+
+  /**
+   * Lightweight connectivity check used by the health endpoint.
+   * Sends a HeadBucket call — cheapest possible operation.
+   */
+  async ping(): Promise<void> {
+    await this.s3.send(new HeadBucketCommand({ Bucket: this.bucket }));
   }
 
   // ─── Upload File ──────────────────────────────────────────────────────────
@@ -84,7 +94,7 @@ export class StorageService implements OnModuleInit {
         ContentType: mimeType,
       }),
     );
-    this.logger.debug(`Uploaded file to MinIO: ${key}`);
+    this.logger.debug(`Uploaded file to storage: ${key}`);
   }
 
   // ─── Download File ────────────────────────────────────────────────────────
@@ -112,7 +122,7 @@ export class StorageService implements OnModuleInit {
     await this.s3.send(
       new DeleteObjectCommand({ Bucket: this.bucket, Key: key }),
     );
-    this.logger.debug(`Deleted file from MinIO: ${key}`);
+    this.logger.debug(`Deleted file from storage: ${key}`);
   }
 
   // ─── Pre-signed URL ───────────────────────────────────────────────────────

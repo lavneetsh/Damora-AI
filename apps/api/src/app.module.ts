@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, MiddlewareConsumer, NestModule } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { BullModule } from '@nestjs/bull';
@@ -15,6 +15,8 @@ import { DocumentsModule } from './modules/documents/documents.module';
 import { ProcessingModule } from './modules/processing/processing.module';
 import { ChatModule } from './modules/chat/chat.module';
 import { AnalyticsModule } from './modules/analytics/analytics.module';
+import { HealthModule } from './modules/health/health.module';
+import { LoggerMiddleware } from './common/middleware/logger.middleware';
 
 @Module({
   imports: [
@@ -47,6 +49,7 @@ import { AnalyticsModule } from './modules/analytics/analytics.module';
         STORAGE_REGION: Joi.string().default('us-east-1'),
         REDIS_URL: Joi.string().default('redis://localhost:6379'),
         QDRANT_URL: Joi.string().default('http://localhost:6333'),
+        QDRANT_API_KEY: Joi.string().optional(), // not required locally; required for Qdrant Cloud
       }),
     }),
 
@@ -79,6 +82,14 @@ import { AnalyticsModule } from './modules/analytics/analytics.module';
     DocumentsModule,
     ChatModule,
     AnalyticsModule,
+
+    // ─── Observability ──────────────────────────────────────────────
+    HealthModule,
   ],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    // Apply request logger to every route
+    consumer.apply(LoggerMiddleware).forRoutes('*');
+  }
+}

@@ -15,6 +15,7 @@ import {
   Lock,
   Globe,
   Share2,
+  Eye,
   EyeOff,
   Users,
 } from 'lucide-react';
@@ -330,7 +331,7 @@ export default function ChatPage() {
               )}
             </div>
             <p className="text-[10px] text-slate-500 flex items-center gap-1 mt-0.5">
-              <Sparkles className="w-3 h-3 text-brand-400" />
+              <Eye className={`w-3 h-3 ${isReadOnly ? 'text-teal-400' : 'text-brand-400'}`} />
               {isReadOnly
                 ? `Shared by ${activeSession?.user?.name ?? 'workspace member'} · Read only`
                 : 'Grounded in active workspace documents'}
