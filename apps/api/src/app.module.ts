@@ -62,9 +62,28 @@ import { LoggerMiddleware } from './common/middleware/logger.middleware';
     // ─── Bull Queue (Redis) — Root config for all queues ────────────
     BullModule.forRootAsync({
       imports: [ConfigModule],
-      useFactory: (config: ConfigService) => ({
-        redis: config.get<string>('REDIS_URL', 'redis://localhost:6379'),
-      }),
+      useFactory: (config: ConfigService) => {
+        const redisUrl = config.get<string>('REDIS_URL', 'redis://localhost:6379');
+        if (redisUrl.startsWith('rediss://')) {
+          try {
+            const urlObj = new URL(redisUrl);
+            return {
+              redis: {
+                host: urlObj.hostname,
+                port: Number(urlObj.port) || 6379,
+                username: urlObj.username ? decodeURIComponent(urlObj.username) : undefined,
+                password: urlObj.password ? decodeURIComponent(urlObj.password) : undefined,
+                tls: {
+                  rejectUnauthorized: false,
+                },
+              },
+            };
+          } catch {
+            return { redis: redisUrl };
+          }
+        }
+        return { redis: redisUrl };
+      },
       inject: [ConfigService],
     }),
 

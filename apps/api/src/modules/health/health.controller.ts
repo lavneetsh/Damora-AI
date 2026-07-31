@@ -23,6 +23,7 @@ type OverallStatus = 'ok' | 'degraded' | 'down';
 interface ServiceDetail {
   status: ServiceStatus;
   latencyMs: number | null;
+  error?: string;
 }
 
 interface HealthResponse {
@@ -65,8 +66,8 @@ function withTimeout<T>(promise: Promise<T>, timeoutMs: number, label: string): 
 }
 
 /**
- * Runs a check function and returns { status, latencyMs }.
- * Never throws — on failure, returns disconnected with null latency.
+ * Runs a check function and returns { status, latencyMs, error }.
+ * Never throws — on failure, returns disconnected with null latency and error message.
  */
 async function runCheck(
   fn: () => Promise<void>,
@@ -77,8 +78,9 @@ async function runCheck(
   try {
     await withTimeout(fn(), timeoutMs, label);
     return { status: 'connected', latencyMs: Date.now() - start };
-  } catch {
-    return { status: 'disconnected', latencyMs: null };
+  } catch (err) {
+    const errorMsg = err instanceof Error ? err.message : String(err);
+    return { status: 'disconnected', latencyMs: null, error: errorMsg };
   }
 }
 
