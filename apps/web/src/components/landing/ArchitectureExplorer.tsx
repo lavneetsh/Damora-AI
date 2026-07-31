@@ -126,7 +126,6 @@ const connections: ArchConnection[] = [
 
 // Animated data packet that travels through the architecture
 function DataPacket({ inView }: { inView: boolean }) {
-  // Follow the main request path: browser → api → redis → bullmq → embed → qdrant → gemini
   const path = [
     { x: 50, y: 5 },
     { x: 50, y: 20 },
@@ -216,6 +215,8 @@ export default function ArchitectureExplorer() {
               const to = nodes.find((n) => n.id === conn.to)!;
               const isHighlighted =
                 hoveredNode === conn.from || hoveredNode === conn.to;
+              const isOtherDimmed =
+                hoveredNode !== null && !isHighlighted;
 
               return (
                 <line
@@ -227,6 +228,7 @@ export default function ArchitectureExplorer() {
                   stroke={isHighlighted ? '#6c3bfa' : 'rgba(108,59,250,0.15)'}
                   strokeWidth={isHighlighted ? 0.4 : 0.2}
                   strokeDasharray={isHighlighted ? 'none' : '1 1'}
+                  opacity={isOtherDimmed ? 0.15 : 1}
                   style={{
                     transition: 'all 0.3s ease',
                     filter: isHighlighted ? 'drop-shadow(0 0 2px #6c3bfa)' : 'none',
@@ -240,63 +242,73 @@ export default function ArchitectureExplorer() {
           <DataPacket inView={isInView} />
 
           {/* Nodes */}
-          {nodes.map((node, index) => (
-            <motion.div
-              key={node.id}
-              initial={{ opacity: 0, scale: 0.8 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.4, delay: index * 0.06 }}
-              className="absolute -translate-x-1/2 -translate-y-1/2"
-              style={{ left: `${node.x}%`, top: `${node.y}%` }}
-              onMouseEnter={() => setHoveredNode(node.id)}
-              onMouseLeave={() => setHoveredNode(null)}
-            >
-              <div
-                className={`relative rounded-2xl p-3 border transition-all duration-300 cursor-default ${
-                  hoveredNode === node.id
-                    ? 'bg-white/[0.08] border-white/[0.15] scale-110'
-                    : 'bg-white/[0.03] border-white/[0.06] hover:bg-white/[0.05]'
-                }`}
-                style={{
-                  boxShadow:
-                    hoveredNode === node.id
-                      ? `0 0 24px ${node.color}30, 0 0 48px ${node.color}15`
-                      : 'none',
-                }}
-              >
-                <div className="flex items-center gap-2 whitespace-nowrap">
-                  <span className="text-base">{node.icon}</span>
-                  <span className="text-xs font-semibold text-white">
-                    {node.label}
-                  </span>
-                </div>
+          {nodes.map((node, index) => {
+            const isHovered = hoveredNode === node.id;
+            const isOtherHovered = hoveredNode !== null && !isHovered;
 
-                {/* Expanded details on hover */}
-                {hoveredNode === node.id && (
-                  <motion.div
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: 'auto' }}
-                    transition={{ duration: 0.2 }}
-                    className="mt-2 pt-2 border-t border-white/[0.08] space-y-1"
-                  >
-                    {node.details.map((detail) => (
-                      <div
-                        key={detail}
-                        className="text-[10px] text-slate-400 flex items-center gap-1.5"
-                      >
-                        <span
-                          className="w-1 h-1 rounded-full flex-shrink-0"
-                          style={{ backgroundColor: node.color }}
-                        />
-                        {detail}
-                      </div>
-                    ))}
-                  </motion.div>
-                )}
-              </div>
-            </motion.div>
-          ))}
+            return (
+              <motion.div
+                key={node.id}
+                initial={{ opacity: 0, scale: 0.8 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.4, delay: index * 0.06 }}
+                className="absolute -translate-x-1/2 -translate-y-1/2 transition-all duration-300"
+                style={{
+                  left: `${node.x}%`,
+                  top: `${node.y}%`,
+                  zIndex: isHovered ? 50 : 10,
+                  opacity: isOtherHovered ? 0.35 : 1,
+                  filter: isOtherHovered ? 'blur(0.5px)' : 'none',
+                }}
+                onMouseEnter={() => setHoveredNode(node.id)}
+                onMouseLeave={() => setHoveredNode(null)}
+              >
+                <div
+                  className={`relative rounded-2xl p-3 border transition-all duration-300 cursor-default ${
+                    isHovered
+                      ? 'bg-[#16162a]/95 backdrop-blur-xl border-[#6c3bfa]/40 scale-105 shadow-2xl shadow-black/80'
+                      : 'bg-white/[0.03] border-white/[0.06] hover:bg-white/[0.05]'
+                  }`}
+                  style={{
+                    boxShadow: isHovered
+                      ? `0 10px 40px -10px ${node.color}40, 0 0 20px ${node.color}20`
+                      : 'none',
+                  }}
+                >
+                  <div className="flex items-center gap-2 whitespace-nowrap">
+                    <span className="text-base">{node.icon}</span>
+                    <span className="text-xs font-semibold text-white">
+                      {node.label}
+                    </span>
+                  </div>
+
+                  {/* Expanded details on hover */}
+                  {isHovered && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      transition={{ duration: 0.2 }}
+                      className="mt-2.5 pt-2.5 border-t border-white/[0.1] space-y-1.5 min-w-[140px]"
+                    >
+                      {node.details.map((detail) => (
+                        <div
+                          key={detail}
+                          className="text-[11px] font-medium text-slate-200 flex items-center gap-2"
+                        >
+                          <span
+                            className="w-1.5 h-1.5 rounded-full flex-shrink-0"
+                            style={{ backgroundColor: node.color }}
+                          />
+                          {detail}
+                        </div>
+                      ))}
+                    </motion.div>
+                  )}
+                </div>
+              </motion.div>
+            );
+          })}
         </motion.div>
       </div>
     </section>

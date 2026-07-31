@@ -34,7 +34,7 @@ const links = [
   {
     icon: FileText,
     label: 'Resume',
-    href: '#',
+    href: 'https://drive.google.com/file/d/19n8tX8DkYA7ejr3ney7WM2HAsuJm20NI/view?usp=drivesdk',
     color: '#6c3bfa',
   },
 ];
