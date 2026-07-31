@@ -1,6 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  transpilePackages: ['@damora/shared-types', 'react-markdown', 'remark-gfm'],
+  transpilePackages: ['@damora/shared-types', 'react-markdown', 'remark-gfm', 'three', '@react-three/fiber', '@react-three/drei'],
   images: {
     remotePatterns: [
       { protocol: 'https', hostname: 'avatars.githubusercontent.com' },

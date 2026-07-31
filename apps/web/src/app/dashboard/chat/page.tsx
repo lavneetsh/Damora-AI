@@ -51,7 +51,7 @@ function SidebarSection({
   count,
 }: {
   label: string;
-  icon: React.ElementType;
+  icon: React.ComponentType<{ className?: string }>;
   children: React.ReactNode;
   count: number;
 }) {
