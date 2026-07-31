@@ -20,9 +20,14 @@ export class VectorStoreService implements OnModuleInit {
   private readonly client: QdrantClient;
 
   constructor(private readonly config: ConfigService) {
-    const url = this.config.get<string>('QDRANT_URL', 'http://localhost:6333');
+    const rawUrl = this.config.get<string>('QDRANT_URL', 'http://localhost:6333');
+    const url = rawUrl.trim().replace(/\/$/, '');
     const apiKey = this.config.get<string>('QDRANT_API_KEY'); // undefined in local dev, required for Qdrant Cloud
-    this.client = new QdrantClient({ url, ...(apiKey ? { apiKey } : {}) });
+    this.client = new QdrantClient({
+      url,
+      ...(apiKey ? { apiKey } : {}),
+      checkCompatibility: false,
+    });
   }
 
   async onModuleInit() {
