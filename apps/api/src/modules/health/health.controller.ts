@@ -78,8 +78,10 @@ async function runCheck(
   try {
     await withTimeout(fn(), timeoutMs, label);
     return { status: 'connected', latencyMs: Date.now() - start };
-  } catch (err) {
-    const errorMsg = err instanceof Error ? err.message : String(err);
+  } catch (err: any) {
+    const cause = err?.cause?.message || (typeof err?.cause === 'string' ? err.cause : '');
+    const mainMsg = err instanceof Error ? err.message : String(err);
+    const errorMsg = cause ? `${mainMsg} (${cause})` : mainMsg;
     return { status: 'disconnected', latencyMs: null, error: errorMsg };
   }
 }
