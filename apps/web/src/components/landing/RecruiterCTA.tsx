@@ -88,10 +88,10 @@ export default function RecruiterCTA() {
                     color={action.primary ? '#ffffff' : action.color}
                   />
                 </div>
-                <h3 className={`text-base font-semibold mb-1.5 ${action.primary ? 'text-white' : 'text-[#111827]'}`}>
+                <h3 className="text-base font-bold text-white mb-1.5">
                   {action.title}
                 </h3>
-                <p className={`text-xs leading-relaxed ${action.primary ? 'text-white/70' : 'text-[#6B7280]'}`}>
+                <p className={`text-xs leading-relaxed ${action.primary ? 'text-white/80' : 'text-slate-400'}`}>
                   {action.description}
                 </p>
               </motion.div>
