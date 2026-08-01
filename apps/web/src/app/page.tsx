@@ -1,75 +1,66 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import BootSequence from '@/components/landing/BootSequence';
-import ParticleField from '@/components/landing/ParticleField';
+import { useState, useCallback } from 'react';
 import Navbar from '@/components/landing/Navbar';
 import HeroSection from '@/components/landing/HeroSection';
-import WhySection from '@/components/landing/WhySection';
-import RagPipeline from '@/components/landing/RagPipeline';
-import AiBrainSphere from '@/components/landing/AiBrainSphere';
+import EmbeddingClusters from '@/components/landing/EmbeddingClusters';
 import ArchitectureExplorer from '@/components/landing/ArchitectureExplorer';
 import StreamingChat from '@/components/landing/StreamingChat';
-import PipelineVisualizer from '@/components/landing/PipelineVisualizer';
+import LiveDeploymentStats from '@/components/landing/LiveDeploymentStats';
+import EngineeringDecisions from '@/components/landing/EngineeringDecisions';
 import BuiltBySection from '@/components/landing/BuiltBySection';
 import RecruiterCTA from '@/components/landing/RecruiterCTA';
 import Footer from '@/components/landing/Footer';
 
 export default function LandingPage() {
-  const [introComplete, setIntroComplete] = useState(false);
-  const [mounted, setMounted] = useState(false);
+  const [heroQuery, setHeroQuery] = useState('');
+  const [querySubmitted, setQuerySubmitted] = useState(false);
 
-  useEffect(() => {
-    setMounted(true);
-    // Check if returning visitor — skip intro immediately
-    if (typeof window !== 'undefined') {
-      const hasVisited = localStorage.getItem('damora-boot-seen');
-      if (hasVisited) {
-        setIntroComplete(true);
-      }
+  const handleQuerySubmit = useCallback((query: string) => {
+    if (query === '__reset__') {
+      setHeroQuery('');
+      setQuerySubmitted(false);
+      return;
     }
+    setHeroQuery(query);
+    setQuerySubmitted(true);
   }, []);
 
-  // Prevent flash on SSR
-  if (!mounted) {
-    return <div className="min-h-screen bg-[#050510]" />;
-  }
-
   return (
-    <>
-      {/* Boot sequence overlay — only for first-time visitors */}
-      {!introComplete && (
-        <BootSequence onComplete={() => setIntroComplete(true)} />
-      )}
+    <div className="landing-root min-h-screen">
+      <Navbar />
 
-      {/* Main landing page */}
-      {introComplete && (
-        <div className="min-h-screen bg-[#0f0f1a] overflow-hidden">
-          <ParticleField />
-          <Navbar />
+      {/*
+       * The landing page tells one continuous story:
+       *
+       * Act 1 — The Question (Hero)
+       * Act 2 — The Journey (Pipeline inline in hero → Clusters → Architecture)
+       * Act 3 — The Answer (Streaming Chat → Deployment Proof)
+       * Act 4 — The Engineer (Decisions → Behind Damora AI → CTA)
+       */}
 
-          <main>
-            {/* Act 1: The Problem */}
-            <HeroSection />
-            <WhySection />
+      {/* Act 1: The Question */}
+      <HeroSection
+        onQuerySubmit={handleQuerySubmit}
+        heroQuery={heroQuery}
+        setHeroQuery={setHeroQuery}
+        querySubmitted={querySubmitted}
+      />
 
-            {/* Act 2: The Solution */}
-            <RagPipeline />
-            <AiBrainSphere />
+      {/* Act 2: The Journey */}
+      <EmbeddingClusters heroQuery={heroQuery} querySubmitted={querySubmitted} />
+      <ArchitectureExplorer />
 
-            {/* Act 3: The Engineering */}
-            <ArchitectureExplorer />
-            <StreamingChat />
-            <PipelineVisualizer />
+      {/* Act 3: The Answer */}
+      <StreamingChat heroQuery={heroQuery} querySubmitted={querySubmitted} />
+      <LiveDeploymentStats />
 
-            {/* Act 4: The Person */}
-            <BuiltBySection />
-            <RecruiterCTA />
-          </main>
+      {/* Act 4: The Engineer */}
+      <EngineeringDecisions />
+      <BuiltBySection />
+      <RecruiterCTA />
 
-          <Footer />
-        </div>
-      )}
-    </>
+      <Footer />
+    </div>
   );
 }

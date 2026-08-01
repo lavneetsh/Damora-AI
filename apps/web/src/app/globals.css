@@ -236,3 +236,61 @@ body {
   padding-left: 1rem;
   color: #94a3b8;
 }
+
+/* ─── Landing Page Light Theme (scoped) ─────────────────────────────────── */
+.landing-root {
+  background-color: #F8F7F4;
+  color: #111827;
+}
+
+.landing-root ::-webkit-scrollbar-track {
+  background: #F0EEE9;
+}
+
+.landing-root ::-webkit-scrollbar-thumb {
+  background: rgba(79, 70, 229, 0.25);
+}
+
+.landing-root ::selection {
+  background: rgba(79, 70, 229, 0.15);
+  color: #111827;
+}
+
+/* Blueprint grid — only shown inside .blueprint-section */
+.blueprint-section {
+  background-image:
+    linear-gradient(to right, #DBEAFE 1px, transparent 1px),
+    linear-gradient(to bottom, #DBEAFE 1px, transparent 1px);
+  background-size: 40px 40px;
+  background-color: #EFF6FF;
+}
+
+/* Typing cursor blink */
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+.cursor-blink {
+  animation: blink 1s step-end infinite;
+}
+
+/* Pipeline stage reveal */
+@keyframes slideInLeft {
+  from { opacity: 0; transform: translateX(-12px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+.stage-reveal {
+  animation: slideInLeft 0.4s ease forwards;
+}
+
+/* Cluster dot transition */
+.cluster-dot {
+  transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.4s ease;
+}
+
+/* Tech stack reveal animation */
+@keyframes techReveal {
+  from { opacity: 0; transform: translateY(8px) scale(0.95); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+

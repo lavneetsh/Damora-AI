@@ -7,20 +7,11 @@ import { ArrowRight, Github, Layers } from 'lucide-react';
 const actions = [
   {
     icon: ArrowRight,
-    title: 'Launch Workspace',
-    description: 'Create an account and start building your knowledge base.',
+    title: 'Try Demo Workspace',
+    description: 'Create an account and explore with pre-loaded documents.',
     href: '/register',
-    color: '#6c3bfa',
+    color: '#4F46E5',
     primary: true,
-    external: false,
-  },
-  {
-    icon: Layers,
-    title: 'View Architecture',
-    description: 'Explore the full system design and API documentation.',
-    href: '#architecture',
-    color: '#3b8ef8',
-    primary: false,
     external: false,
   },
   {
@@ -28,32 +19,40 @@ const actions = [
     title: 'Source Code',
     description: 'Browse the full monorepo — frontend, backend, and infra.',
     href: 'https://github.com/lavneetsh/Damora-AI',
-    color: '#ffffff',
+    color: '#374151',
     primary: false,
     external: true,
+  },
+  {
+    icon: Layers,
+    title: 'System Architecture',
+    description: 'Explore how each component connects in the live diagram.',
+    href: '#architecture',
+    color: '#6B7280',
+    primary: false,
+    external: false,
   },
 ];
 
 export default function RecruiterCTA() {
   return (
-    <section className="relative z-10 py-20 md:py-28 px-6 md:px-12">
+    <section className="relative z-10 py-20 md:py-28 px-6 md:px-12 bg-[#F8F7F4]">
       <div className="max-w-4xl mx-auto">
         {/* Heading */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-          className="text-center mb-12"
+          className="text-center mb-10"
         >
-          <p className="text-sm text-slate-500 mb-3 font-mono">
+          <p className="text-xs text-[#9CA3AF] mb-3 font-mono tracking-wider uppercase">
             You&apos;re still here.
           </p>
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-3">
+          <h2 className="text-3xl md:text-4xl font-bold text-[#111827] tracking-tight mb-3">
             Let&apos;s make it worth your time.
           </h2>
-          <p className="text-slate-400 max-w-md mx-auto">
-            Explore the live product, read the code, or dive into the architecture.
+          <p className="text-[#6B7280] max-w-sm mx-auto text-sm">
+            Explore the live product, read the code, or trace the architecture.
           </p>
         </motion.div>
 
@@ -64,67 +63,47 @@ export default function RecruiterCTA() {
           viewport={{ once: true }}
           variants={{
             hidden: { opacity: 0 },
-            visible: {
-              opacity: 1,
-              transition: { staggerChildren: 0.1, delayChildren: 0.2 },
-            },
+            visible: { opacity: 1, transition: { staggerChildren: 0.1 } },
           }}
           className="grid grid-cols-1 md:grid-cols-3 gap-4"
         >
-          {actions.map((action) => {
-            const CardContent = (
+          {actions.map(action => {
+            const card = (
               <motion.div
-                variants={{
-                  hidden: { opacity: 0, y: 20 },
-                  visible: { opacity: 1, y: 0 },
-                }}
-                className={`group rounded-2xl p-6 border transition-all duration-300 cursor-pointer h-full ${
+                key={action.title}
+                variants={{ hidden: { opacity: 0, y: 16 }, visible: { opacity: 1, y: 0 } }}
+                className={`group rounded-2xl p-6 border transition-all duration-200 cursor-pointer h-full hover:shadow-sm ${
                   action.primary
-                    ? 'bg-gradient-to-br from-[#6c3bfa]/20 to-[#3b8ef8]/10 border-[#6c3bfa]/30 hover:border-[#6c3bfa]/50 hover:shadow-[0_0_30px_rgba(108,59,250,0.2)]'
-                    : 'bg-white/[0.03] border-white/[0.06] hover:border-white/[0.12] hover:bg-white/[0.05]'
+                    ? 'bg-[#4F46E5] border-[#4F46E5] hover:bg-[#4338CA]'
+                    : 'bg-white border-[#E2E0DC] hover:border-[#C7C5C0]'
                 }`}
               >
                 <div
-                  className="w-10 h-10 rounded-xl flex items-center justify-center mb-4 transition-transform group-hover:scale-110 duration-200"
-                  style={{ backgroundColor: `${action.color}15` }}
+                  className={`w-10 h-10 rounded-xl flex items-center justify-center mb-4 transition-transform group-hover:scale-110 duration-200 ${
+                    action.primary ? 'bg-white/20' : 'bg-[#F8F7F4] border border-[#E2E0DC]'
+                  }`}
                 >
-                  <action.icon className="w-5 h-5" style={{ color: action.color }} />
+                  <action.icon
+                    className="w-5 h-5"
+                    color={action.primary ? '#ffffff' : action.color}
+                  />
                 </div>
-                <h3 className="text-base font-semibold text-white mb-1.5">
+                <h3 className={`text-base font-semibold mb-1.5 ${action.primary ? 'text-white' : 'text-[#111827]'}`}>
                   {action.title}
                 </h3>
-                <p className="text-xs text-slate-400 leading-relaxed">
+                <p className={`text-xs leading-relaxed ${action.primary ? 'text-white/70' : 'text-[#6B7280]'}`}>
                   {action.description}
                 </p>
               </motion.div>
             );
 
             if (action.external) {
-              return (
-                <a
-                  key={action.title}
-                  href={action.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  {CardContent}
-                </a>
-              );
+              return <a key={action.title} href={action.href} target="_blank" rel="noopener noreferrer">{card}</a>;
             }
-
             if (action.href.startsWith('#')) {
-              return (
-                <a key={action.title} href={action.href}>
-                  {CardContent}
-                </a>
-              );
+              return <a key={action.title} href={action.href}>{card}</a>;
             }
-
-            return (
-              <Link key={action.title} href={action.href as '/register'}>
-                {CardContent}
-              </Link>
-            );
+            return <Link key={action.title} href={action.href as '/register'}>{card}</Link>;
           })}
         </motion.div>
       </div>
