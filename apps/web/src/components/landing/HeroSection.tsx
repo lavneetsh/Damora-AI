@@ -143,30 +143,30 @@ export default function HeroSection({
     <section className="relative min-h-screen flex flex-col pt-24 pb-16 px-6 md:px-12">
       <div className="max-w-5xl mx-auto w-full flex flex-col flex-1">
 
-        {/* Headline — fades up when submitted */}
+        {/* Headline */}
         <motion.div
-          animate={querySubmitted ? { opacity: 0.4, scale: 0.97, y: -8 } : { opacity: 1, scale: 1, y: 0 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
           transition={{ duration: 0.5, ease: 'easeOut' }}
           className="mb-10 md:mb-14"
         >
           <h1
-            className="font-bold tracking-tight leading-[0.95] text-[#111827] mb-4"
+            className="font-bold tracking-tight leading-[0.95] text-white mb-4"
             style={{ fontSize: 'clamp(2.8rem, 7vw, 5.5rem)' }}
           >
             Your Company&apos;s<br />
-            <span className="text-[#4F46E5]">ChatGPT.</span>
+            <span className="text-[#818CF8]">ChatGPT.</span>
           </h1>
-          <p className="text-xl md:text-2xl text-[#374151] font-medium mb-6">
+          <p className="text-xl md:text-2xl text-slate-300 font-medium mb-6">
             Built Around Your Documents.
           </p>
 
           {/* Problem/Solution — merged Why section */}
           <div className="flex flex-col sm:flex-row gap-4 text-sm">
-            <div className="flex-1 rounded-xl border border-red-100 bg-red-50 p-4">
-              <div className="text-red-600 font-semibold mb-2 text-xs uppercase tracking-wide">
+            <div className="flex-1 rounded-xl border border-red-500/20 bg-red-950/30 backdrop-blur-md p-4">
+              <div className="text-red-400 font-semibold mb-2 text-xs uppercase tracking-wide">
                 ❌ ChatGPT doesn&apos;t know your
               </div>
-              <div className="flex flex-wrap gap-x-4 gap-y-1 text-[#374151]">
+              <div className="flex flex-wrap gap-x-4 gap-y-1 text-slate-300">
                 {['HR Policies', 'Contracts', 'SOPs', 'Internal Knowledge'].map(item => (
                   <span key={item} className="flex items-center gap-1">
                     <span className="w-1 h-1 rounded-full bg-red-400 inline-block" />
@@ -175,11 +175,11 @@ export default function HeroSection({
                 ))}
               </div>
             </div>
-            <div className="flex-1 rounded-xl border border-emerald-100 bg-emerald-50 p-4">
-              <div className="text-emerald-700 font-semibold mb-2 text-xs uppercase tracking-wide">
+            <div className="flex-1 rounded-xl border border-emerald-500/20 bg-emerald-950/30 backdrop-blur-md p-4">
+              <div className="text-emerald-400 font-semibold mb-2 text-xs uppercase tracking-wide">
                 ✓ Damora AI does.
               </div>
-              <div className="text-[#374151] text-sm leading-relaxed">
+              <div className="text-slate-300 text-sm leading-relaxed">
                 Every answer grounded in your actual documents,
                 with source citations.
               </div>
@@ -204,23 +204,23 @@ export default function HeroSection({
                 transition={{ duration: 0.3 }}
               >
                 <div className="relative group">
-                  <div className="flex items-center gap-3 px-5 py-4 rounded-2xl bg-white border-2 border-[#E2E0DC] shadow-sm hover:border-[#4F46E5]/30 hover:shadow-md transition-all duration-200 focus-within:border-[#4F46E5]/50 focus-within:shadow-[0_0_0_4px_rgba(79,70,229,0.08)]">
+                  <div className="flex items-center gap-3 px-5 py-4 rounded-2xl bg-[#0F0F1A]/90 border border-white/15 shadow-2xl backdrop-blur-md hover:border-indigo-500/40 transition-all duration-200 focus-within:border-indigo-500/60 focus-within:shadow-[0_0_0_4px_rgba(99,102,241,0.15)]">
                     <input
                       ref={inputRef}
                       value={inputValue}
                       onChange={e => setInputValue(e.target.value)}
                       onKeyDown={handleKeyDown}
                       placeholder="Ask your company anything..."
-                      className="flex-1 bg-transparent text-[#111827] text-base md:text-lg placeholder:text-[#9CA3AF] outline-none font-medium"
+                      className="flex-1 bg-transparent text-white text-base md:text-lg placeholder:text-slate-500 outline-none font-medium"
                       style={{ fontFamily: 'inherit' }}
                     />
                     {isTyping && (
-                      <span className="w-0.5 h-5 bg-[#4F46E5] cursor-blink inline-block" />
+                      <span className="w-0.5 h-5 bg-indigo-400 cursor-blink inline-block" />
                     )}
                     <button
                       onClick={handleSubmit}
                       disabled={!inputValue.trim()}
-                      className="w-10 h-10 rounded-xl bg-[#4F46E5] text-white flex items-center justify-center hover:bg-[#4338CA] disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-150 hover:scale-105 active:scale-95 flex-shrink-0"
+                      className="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center hover:bg-indigo-500 disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-150 hover:scale-105 active:scale-95 flex-shrink-0 shadow-lg"
                     >
                       <ArrowRight className="w-4 h-4" />
                     </button>
@@ -229,12 +229,12 @@ export default function HeroSection({
 
                 {/* Example queries */}
                 <div className="flex items-center gap-2 mt-3 flex-wrap">
-                  <span className="text-xs text-[#9CA3AF]">Try:</span>
+                  <span className="text-xs text-slate-400">Try:</span>
                   {EXAMPLE_QUERIES.map(q => (
                     <button
                       key={q}
                       onClick={() => { setInputValue(q); setHasAutoTyped(true); }}
-                      className="text-xs px-3 py-1.5 rounded-full border border-[#E2E0DC] text-[#6B7280] hover:border-[#4F46E5]/30 hover:text-[#4F46E5] hover:bg-indigo-50 transition-all duration-150"
+                      className="text-xs px-3 py-1.5 rounded-full border border-white/10 text-slate-300 bg-white/5 hover:border-indigo-500/40 hover:text-white hover:bg-indigo-500/10 transition-all duration-150"
                     >
                       {q}
                     </button>
@@ -377,8 +377,8 @@ export default function HeroSection({
                                 exit={{ opacity: 0, height: 0 }}
                                 className="mt-2 pl-3 border-l-2 border-[#4F46E5]/20"
                               >
-                                <p className="text-xs text-[#6B7280] italic">
-                                  &ldquo;Employees in eligible roles may work remotely up to 3 days per week,
+                                <p className="text-xs text-[#6B7280] italic leading-relaxed">
+                                  &ldquo;Employees in remote-eligible roles may work remotely up to 3 days per week,
                                   subject to quarterly review and manager approval...&rdquo;
                                 </p>
                                 <p className="text-[10px] text-[#9CA3AF] mt-1 font-mono">

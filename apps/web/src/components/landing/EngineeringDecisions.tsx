@@ -59,66 +59,65 @@ const decisions = [
 
 export default function EngineeringDecisions() {
   return (
-    <section className="relative z-10 py-24 md:py-32 px-6 md:px-12 bg-[#F8F7F4]">
+    <section id="engineering" className="relative z-10 py-24 md:py-32 px-6 md:px-12 bg-transparent">
       <div className="max-w-5xl mx-auto">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="mb-12"
+          className="mb-16"
         >
           <div className="flex items-center gap-2 mb-3">
             <span className="text-xs font-mono uppercase tracking-widest text-[#9CA3AF]">Engineering</span>
-            <div className="h-px flex-1 bg-[#E2E0DC]" />
+            <div className="h-px flex-1 bg-white/10" />
           </div>
-          <h2 className="text-3xl md:text-5xl font-bold text-[#111827] tracking-tight mb-3">
-            Decisions Made
+          <h2 className="text-3xl md:text-5xl font-bold text-white tracking-tight mb-3">
+            Engineering Decisions
           </h2>
-          <p className="text-[#6B7280] text-base md:text-lg max-w-lg">
-            Every technology was chosen deliberately. Here&apos;s the reasoning.
+          <p className="text-slate-400 text-base md:text-lg max-w-lg">
+            Every architectural choice in Damora AI was made for production performance, resilience, and scale.
           </p>
         </motion.div>
 
-        {/* Decision cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Decisions grid — 2x2 grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {decisions.map((d, i) => (
             <motion.div
               key={d.tech}
               initial={{ opacity: 0, y: 16 }}
               whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: '-40px' }}
-              transition={{ duration: 0.4, delay: i * 0.08 }}
-              className="rounded-2xl bg-white border border-[#E2E0DC] p-5 hover:border-[#C7C5C0] hover:shadow-sm transition-all duration-200"
+              viewport={{ once: true }}
+              transition={{ duration: 0.4, delay: i * 0.1 }}
+              className="rounded-2xl border border-white/10 bg-[#0F0F1A]/80 backdrop-blur-md p-6 flex flex-col justify-between shadow-xl"
             >
-              {/* Tech badge */}
-              <div className="flex items-center gap-2.5 mb-4">
-                <div
-                  className="w-9 h-9 rounded-xl flex items-center justify-center text-base"
-                  style={{ backgroundColor: d.bgColor, border: `1px solid ${d.borderColor}` }}
+              <div>
+                {/* Badge */}
+                <span
+                  className="text-[10px] font-mono font-semibold uppercase tracking-wider px-2.5 py-1 rounded-full inline-block mb-4"
+                  style={{
+                    backgroundColor: d.bgColor,
+                    color: d.color,
+                    border: `1px solid ${d.borderColor}`,
+                  }}
                 >
-                  {d.icon}
-                </div>
-                <div>
-                  <div className="text-sm font-bold text-[#111827]">{d.tech}</div>
-                  <div className="text-[11px] text-[#9CA3AF]">{d.question}</div>
-                </div>
-              </div>
+                  {d.tech}
+                </span>
 
-              {/* Reasons */}
-              <div className="space-y-3">
-                {d.reasons.map((r) => (
-                  <div key={r.label} className="flex gap-3">
-                    <span
-                      className="mt-1 w-1.5 h-1.5 rounded-full flex-shrink-0"
-                      style={{ backgroundColor: d.color }}
-                    />
-                    <div>
-                      <div className="text-xs font-semibold text-[#374151]">{r.label}</div>
-                      <div className="text-[11px] text-[#6B7280] leading-relaxed">{r.desc}</div>
+                {/* Question */}
+                <h3 className="text-base font-bold text-white mb-4 leading-snug">
+                  {d.question}
+                </h3>
+
+                {/* Reasons */}
+                <div className="space-y-3">
+                  {d.reasons.map((r) => (
+                    <div key={r.label}>
+                      <div className="text-xs font-semibold text-indigo-300 mb-0.5">{r.label}</div>
+                      <div className="text-xs text-slate-400 leading-relaxed">{r.desc}</div>
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
             </motion.div>
           ))}

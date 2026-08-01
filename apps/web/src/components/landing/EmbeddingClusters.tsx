@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 
 interface EmbeddingClustersProps {
   heroQuery: string;
@@ -110,6 +110,22 @@ export default function EmbeddingClusters({ heroQuery, querySubmitted }: Embeddi
     }
   }, [querySubmitted, heroQuery]);
 
+  const leaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const handleMouseEnter = (idx: number) => {
+    if (leaveTimeoutRef.current) {
+      clearTimeout(leaveTimeoutRef.current);
+      leaveTimeoutRef.current = null;
+    }
+    setActiveCluster(idx);
+  };
+
+  const handleMouseLeave = () => {
+    leaveTimeoutRef.current = setTimeout(() => {
+      setActiveCluster(null);
+    }, 120);
+  };
+
   // Compute dot positions based on active cluster
   const computedDots = useMemo(() => {
     if (activeCluster === null) return dots;
@@ -139,7 +155,7 @@ export default function EmbeddingClusters({ heroQuery, querySubmitted }: Embeddi
   }, [dots, activeCluster]);
 
   return (
-    <section className="relative z-10 py-24 md:py-32 px-6 md:px-12 bg-[#F8F7F4]">
+    <section className="relative z-10 py-24 md:py-32 px-6 md:px-12 bg-transparent">
       <div className="max-w-5xl mx-auto">
         {/* Header */}
         <motion.div
@@ -148,18 +164,18 @@ export default function EmbeddingClusters({ heroQuery, querySubmitted }: Embeddi
           viewport={{ once: true }}
           className="text-center mb-14"
         >
-          <h2 className="text-3xl md:text-5xl font-bold text-[#111827] tracking-tight mb-3">
+          <h2 className="text-3xl md:text-5xl font-bold text-white tracking-tight mb-3">
             Semantic Memory
           </h2>
-          <p className="text-[#6B7280] max-w-lg mx-auto text-base md:text-lg">
+          <p className="text-slate-400 max-w-lg mx-auto text-base md:text-lg">
             Every document becomes a point in vector space.{' '}
-            Click a cluster to see how Damora organises your knowledge.
+            Hover over a cluster to see how Damora organizes your knowledge.
           </p>
           {querySubmitted && heroQuery && (
             <motion.p
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="mt-3 text-sm text-[#4F46E5] font-medium"
+              className="mt-3 text-sm text-indigo-400 font-medium"
             >
               ↑ Highlighting cluster matched to your query
             </motion.p>
@@ -172,7 +188,7 @@ export default function EmbeddingClusters({ heroQuery, querySubmitted }: Embeddi
             initial={{ opacity: 0, scale: 0.95 }}
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
-            className="flex-1 w-full rounded-2xl border border-[#E2E0DC] overflow-hidden shadow-sm"
+            className="flex-1 w-full rounded-2xl border border-white/15 overflow-hidden shadow-2xl"
             style={{ background: 'linear-gradient(135deg, #1E1B4B 0%, #312E81 50%, #1E3A5F 100%)' }}
           >
             <svg
@@ -228,48 +244,51 @@ export default function EmbeddingClusters({ heroQuery, querySubmitted }: Embeddi
             initial={{ opacity: 0, x: 20 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
-            className="flex flex-row flex-wrap lg:flex-col gap-2 lg:gap-3 lg:w-52"
+            className="flex flex-row flex-wrap lg:flex-col gap-3 lg:gap-4 lg:w-56"
           >
             {CLUSTERS.map((cluster, idx) => {
               const isActive = activeCluster === idx;
               return (
                 <button
                   key={cluster.name}
+                  onMouseEnter={() => handleMouseEnter(idx)}
+                  onMouseLeave={handleMouseLeave}
                   onClick={() => setActiveCluster(isActive ? null : idx)}
-                  className={`text-left px-4 py-3 rounded-xl border transition-all duration-200 ${
+                  className={`text-left px-4 py-3.5 rounded-xl border transition-all duration-300 ${
                     isActive
-                      ? 'shadow-sm scale-[1.02]'
-                      : 'border-[#E2E0DC] bg-white hover:border-[#C7C5C0]'
+                      ? 'shadow-lg scale-[1.02]'
+                      : 'border-white/10 bg-[#0F0F1A]/80 backdrop-blur-md hover:border-white/25 text-white'
                   }`}
                   style={isActive ? {
                     backgroundColor: cluster.bgColor,
                     borderColor: cluster.borderColor,
                   } : {}}
                 >
-                  <div className="flex items-center gap-2 mb-1">
+                  <div className="flex items-center gap-2">
                     <span
                       className="w-2.5 h-2.5 rounded-full flex-shrink-0"
                       style={{ backgroundColor: cluster.color }}
                     />
-                    <span className="text-sm font-semibold text-[#111827]">{cluster.name}</span>
+                    <span className={`text-sm font-semibold ${isActive ? 'text-[#111827]' : 'text-white'}`}>{cluster.name}</span>
                   </div>
-                  <AnimatePresence>
-                    {isActive && (
-                      <motion.div
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: 'auto' }}
-                        exit={{ opacity: 0, height: 0 }}
-                        className="space-y-1 mt-1.5"
-                      >
-                        {cluster.docs.map(doc => (
-                          <div key={doc} className="text-[11px] text-[#6B7280] flex items-center gap-1.5">
-                            <span className="text-[9px]">📄</span>
-                            {doc}
-                          </div>
-                        ))}
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
+
+                  {/* Document list — 60fps CSS grid 0fr → 1fr transition */}
+                  <div
+                    className={`grid transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+                      isActive
+                        ? 'grid-rows-[1fr] opacity-100 mt-2.5'
+                        : 'grid-rows-[0fr] opacity-0 mt-0 pointer-events-none'
+                    }`}
+                  >
+                    <div className="overflow-hidden space-y-1">
+                      {cluster.docs.map(doc => (
+                        <div key={doc} className={`text-[11px] flex items-center gap-1.5 ${isActive ? 'text-slate-700 font-medium' : 'text-slate-300'}`}>
+                          <span className="text-[9px]">📄</span>
+                          {doc}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 </button>
               );
             })}

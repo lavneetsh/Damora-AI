@@ -96,7 +96,7 @@ export default function StreamingChat({ heroQuery, querySubmitted }: StreamingCh
   }, [content.answer, hasStarted]);
 
   return (
-    <section id="demo" className="relative z-10 py-24 md:py-32 px-6 md:px-12 bg-[#F8F7F4]">
+    <section id="demo" className="relative z-10 py-24 md:py-32 px-6 md:px-12 bg-transparent">
       <div className="max-w-3xl mx-auto">
         {/* Header */}
         <motion.div
@@ -105,17 +105,17 @@ export default function StreamingChat({ heroQuery, querySubmitted }: StreamingCh
           viewport={{ once: true }}
           className="text-center mb-12"
         >
-          <h2 className="text-3xl md:text-5xl font-bold text-[#111827] tracking-tight mb-3">
+          <h2 className="text-3xl md:text-5xl font-bold text-white tracking-tight mb-3">
             Ask Damora
           </h2>
-          <p className="text-[#6B7280] text-base md:text-lg max-w-md mx-auto">
+          <p className="text-slate-400 text-base md:text-lg max-w-md mx-auto">
             Every answer is grounded in your documents — no hallucination, always cited.
           </p>
           {querySubmitted && heroQuery && (
             <motion.p
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="mt-2 text-sm text-[#4F46E5] font-medium"
+              className="mt-2 text-sm text-indigo-400 font-medium"
             >
               Showing answer for: &ldquo;{heroQuery}&rdquo;
             </motion.p>

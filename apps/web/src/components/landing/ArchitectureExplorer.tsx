@@ -216,12 +216,12 @@ export default function ArchitectureExplorer() {
           </p>
         </motion.div>
 
-        {/* Graph — overflow:visible so edge-node tooltips aren't clipped */}
+        {/* Graph */}
         <motion.div
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
-          className="relative w-full bg-white/70 backdrop-blur-sm rounded-2xl border border-[#BFDBFE] shadow-sm"
+          className="relative w-full bg-white/85 backdrop-blur-sm rounded-2xl border border-[#BFDBFE] shadow-sm"
           style={{ minHeight: 580, overflow: 'visible' }}
         >
           {/* SVG edges */}

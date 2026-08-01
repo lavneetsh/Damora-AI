@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback } from 'react';
+import SystemBackground from '@/components/landing/SystemBackground';
 import Navbar from '@/components/landing/Navbar';
 import HeroSection from '@/components/landing/HeroSection';
 import EmbeddingClusters from '@/components/landing/EmbeddingClusters';
@@ -28,7 +29,8 @@ export default function LandingPage() {
   }, []);
 
   return (
-    <div className="landing-root min-h-screen">
+    <div className="landing-root min-h-screen relative">
+      <SystemBackground heroQuery={heroQuery} querySubmitted={querySubmitted} />
       <Navbar />
 
       {/*

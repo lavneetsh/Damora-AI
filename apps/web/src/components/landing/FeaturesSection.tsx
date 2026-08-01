@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import {
   Layers,
   Users,
@@ -36,7 +36,7 @@ const features: Feature[] = [
     borderColor: '#C7D2FE',
     label: 'Core',
     title: 'Multi-Workspace',
-    description: 'Create isolated workspaces for different teams, projects, or clients — each with its own knowledge base.',
+    description: 'Create isolated workspaces for different teams or clients — each with its own document knowledge base.',
     bullets: [
       'Fully isolated document sets per workspace',
       'Switch workspaces without re-authenticating',
@@ -52,7 +52,7 @@ const features: Feature[] = [
     borderColor: '#A5F3FC',
     label: 'Collaboration',
     title: 'Team Sharing',
-    description: 'Invite colleagues to your workspace with a single click. Everyone gets access to the same knowledge base instantly.',
+    description: 'Invite colleagues to your workspace with a single click. Everyone gets instant access to shared knowledge.',
     bullets: [
       'Email invite with secure token',
       'One workspace, many team members',
@@ -67,42 +67,11 @@ const features: Feature[] = [
     borderColor: '#FECACA',
     label: 'Access Control',
     title: 'Role-Based Permissions',
-    description: 'Three-tier access model ensures the right people see the right things.',
+    description: 'Three-tier security model (Owner 👑, Admin 🛡️, Employee 👤) ensures privacy and exact access control.',
     bullets: [
       '👑 Owner — full control, billing, delete workspace',
       '🛡️ Admin — manage members, upload documents',
       '👤 Employee — query only, read-only access',
-    ],
-    badge: 'Enterprise',
-  },
-  {
-    id: 'analytics',
-    icon: BarChart3,
-    color: '#D97706',
-    bgColor: '#FFFBEB',
-    borderColor: '#FDE68A',
-    label: 'Insights',
-    title: 'Analytics Dashboard',
-    description: 'Understand how your team uses Damora AI — which documents are queried most, response quality trends, and member activity.',
-    bullets: [
-      'Query volume and latency over time',
-      'Most-accessed documents and chunks',
-      'Per-member usage breakdown',
-    ],
-  },
-  {
-    id: 'byok',
-    icon: Key,
-    color: '#7C3AED',
-    bgColor: '#F5F3FF',
-    borderColor: '#DDD6FE',
-    label: 'BYOK',
-    title: 'Bring Your Own Key',
-    description: 'Use your own Gemini API key. Your data never touches our AI quota — full cost control and compliance.',
-    bullets: [
-      'Connect your own Google AI API key',
-      'Encrypted at rest with AES-256',
-      'No vendor lock-in on AI spend',
     ],
     badge: 'Enterprise',
   },
@@ -114,7 +83,7 @@ const features: Feature[] = [
     borderColor: '#A7F3D0',
     label: 'Processing',
     title: 'Document Ingestion',
-    description: 'Upload PDFs and documents. Damora automatically extracts, chunks, embeds, and indexes — ready to query in seconds.',
+    description: 'Upload PDFs and documents. Damora automatically extracts, chunks, embeds, and indexes in seconds.',
     bullets: [
       'PDF, DOCX, TXT — auto-detected',
       'Background OCR via BullMQ workers',
@@ -129,7 +98,7 @@ const features: Feature[] = [
     borderColor: '#BFDBFE',
     label: 'Retrieval',
     title: 'Semantic Search',
-    description: 'Not keyword search. Meaning search. Find information even when exact words don\'t match — powered by Qdrant vector similarity.',
+    description: 'Meaning-based vector search. Find relevant information even when exact keywords don\'t match.',
     bullets: [
       'Returns top-k semantically similar chunks',
       'Cosine similarity scoring (0–100%)',
@@ -144,12 +113,43 @@ const features: Feature[] = [
     borderColor: '#FBCFE8',
     label: 'Interface',
     title: 'AI Chat Interface',
-    description: 'A familiar ChatGPT-like interface — but every answer is grounded in your documents with source citations.',
+    description: 'A familiar ChatGPT-like interface — grounded in your actual documents with verified source citations.',
     bullets: [
       'Streaming response, character by character',
       'Click any citation to see the source excerpt',
       'Persistent chat history per workspace',
     ],
+  },
+  {
+    id: 'analytics',
+    icon: BarChart3,
+    color: '#D97706',
+    bgColor: '#FFFBEB',
+    borderColor: '#FDE68A',
+    label: 'Insights',
+    title: 'Analytics Dashboard',
+    description: 'Track query volume, response latency, most-accessed documents, and member activity in real time.',
+    bullets: [
+      'Query volume and latency over time',
+      'Most-accessed documents and chunks',
+      'Per-member usage breakdown',
+    ],
+  },
+  {
+    id: 'byok',
+    icon: Key,
+    color: '#7C3AED',
+    bgColor: '#F5F3FF',
+    borderColor: '#DDD6FE',
+    label: 'BYOK',
+    title: 'Bring Your Own Key',
+    description: 'Connect your own Gemini API key. Full cost control, data privacy, and zero shared rate limits.',
+    bullets: [
+      'Connect your own Google AI API key',
+      'Encrypted at rest with AES-256',
+      'No vendor lock-in on AI spend',
+    ],
+    badge: 'Enterprise',
   },
 ];
 
@@ -157,8 +157,8 @@ export default function FeaturesSection() {
   const [activeFeature, setActiveFeature] = useState<string | null>(null);
 
   return (
-    <section id="features" className="relative z-10 py-24 md:py-32 px-6 md:px-12 bg-[#F3F2EF]">
-      <div className="max-w-5xl mx-auto">
+    <section id="features" className="relative z-10 py-24 md:py-32 px-6 md:px-12 bg-transparent">
+      <div className="max-w-6xl mx-auto">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -172,121 +172,117 @@ export default function FeaturesSection() {
             </span>
             <div className="h-px flex-1 bg-[#E2E0DC]" />
           </div>
-          <h2 className="text-3xl md:text-5xl font-bold text-[#111827] tracking-tight mb-3">
+          <h2 className="text-3xl md:text-5xl font-bold text-white tracking-tight mb-3">
             Everything You Need
           </h2>
-          <p className="text-[#6B7280] text-base md:text-lg max-w-lg">
+          <p className="text-slate-400 text-base md:text-lg max-w-lg">
             Damora AI is a complete enterprise knowledge platform —
             not just a chat wrapper. Click any feature to learn more.
           </p>
         </motion.div>
 
-        {/* Bento grid */}
+        {/* Bento grid — perfectly balanced 4x2 grid */}
         <motion.div
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true }}
           variants={{
             hidden: { opacity: 0 },
-            visible: { opacity: 1, transition: { staggerChildren: 0.06 } },
+            visible: { opacity: 1, transition: { staggerChildren: 0.05 } },
           }}
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 auto-rows-auto items-start"
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-start"
         >
-          {features.map((feat, i) => {
+          {features.map((feat) => {
             const Icon = feat.icon;
             const isActive = activeFeature === feat.id;
-            // Feature 0 (Workspace) and 4 (BYOK) span 2 cols to create bento variety
-            const isWide = i === 0 || i === 4;
 
             return (
               <motion.div
                 key={feat.id}
-                layout
                 variants={{ hidden: { opacity: 0, y: 16 }, visible: { opacity: 1, y: 0 } }}
-                className={`${isWide ? 'sm:col-span-2' : 'col-span-1'} self-start`}
+                className="col-span-1 self-start"
               >
                 <button
                   onClick={() => setActiveFeature(isActive ? null : feat.id)}
                   className="w-full text-left block"
                 >
-                  <motion.div
-                    layout
-                    className={`rounded-2xl border p-5 transition-all duration-200 cursor-pointer bg-white ${
+                  <div
+                    className={`rounded-2xl border p-5 transition-all duration-300 cursor-pointer bg-[#0F0F1A]/80 backdrop-blur-md flex flex-col justify-between ${
                       isActive
-                        ? 'shadow-md scale-[1.01]'
-                        : 'hover:shadow-sm hover:border-[#C7C5C0]'
+                        ? 'shadow-xl scale-[1.01]'
+                        : 'hover:shadow-md border-white/10 hover:border-white/25'
                     }`}
-                    style={isActive ? {
-                      borderColor: feat.color,
-                      boxShadow: `0 4px 24px ${feat.color}15`,
-                    } : { borderColor: '#E2E0DC' }}
+                    style={{
+                      borderColor: isActive ? feat.color : 'rgba(255,255,255,0.12)',
+                      boxShadow: isActive ? `0 4px 24px ${feat.color}25` : undefined,
+                      minHeight: 220,
+                    }}
                   >
-                    {/* Icon + badge row */}
-                    <div className="flex items-start justify-between mb-4">
-                      <div
-                        className="w-10 h-10 rounded-xl flex items-center justify-center"
-                        style={{ backgroundColor: feat.bgColor, border: `1px solid ${feat.borderColor}` }}
-                      >
-                        <Icon className="w-5 h-5" style={{ color: feat.color }} />
-                      </div>
-                      <div className="flex items-center gap-2">
-                        {feat.badge && (
-                          <span
-                            className="text-[10px] font-semibold px-2 py-0.5 rounded-full"
-                            style={{
-                              backgroundColor: feat.bgColor,
-                              color: feat.color,
-                              border: `1px solid ${feat.borderColor}`,
-                            }}
-                          >
-                            {feat.badge}
-                          </span>
-                        )}
-                        <ChevronRight
-                          className="w-4 h-4 text-[#9CA3AF] transition-transform duration-200"
-                          style={{ transform: isActive ? 'rotate(90deg)' : 'rotate(0deg)' }}
-                        />
-                      </div>
-                    </div>
-
-                    {/* Label */}
-                    <div
-                      className="text-[10px] font-semibold uppercase tracking-wider mb-1"
-                      style={{ color: feat.color }}
-                    >
-                      {feat.label}
-                    </div>
-
-                    {/* Title */}
-                    <h3 className="text-sm font-bold text-[#111827] mb-2">{feat.title}</h3>
-
-                    {/* Description */}
-                    <p className="text-xs text-[#6B7280] leading-relaxed">{feat.description}</p>
-
-                    {/* Expandable bullets */}
-                    <AnimatePresence initial={false}>
-                      {isActive && (
-                        <motion.div
-                          initial={{ opacity: 0, height: 0 }}
-                          animate={{ opacity: 1, height: 'auto' }}
-                          exit={{ opacity: 0, height: 0 }}
-                          transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-                          className="mt-4 pt-4 border-t space-y-2 overflow-hidden"
-                          style={{ borderColor: feat.borderColor }}
+                    <div>
+                      {/* Icon + badge row */}
+                      <div className="flex items-start justify-between mb-4">
+                        <div
+                          className="w-10 h-10 rounded-xl flex items-center justify-center"
+                          style={{ backgroundColor: feat.bgColor, border: `1px solid ${feat.borderColor}` }}
                         >
-                          {feat.bullets.map(bullet => (
-                            <div key={bullet} className="flex items-start gap-2">
-                              <span
-                                className="w-1.5 h-1.5 rounded-full mt-1 flex-shrink-0"
-                                style={{ backgroundColor: feat.color }}
-                              />
-                              <span className="text-[11px] text-[#374151] leading-snug">{bullet}</span>
-                            </div>
-                          ))}
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </motion.div>
+                          <Icon className="w-5 h-5" style={{ color: feat.color }} />
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {feat.badge && (
+                            <span
+                              className="text-[10px] font-semibold px-2 py-0.5 rounded-full"
+                              style={{
+                                backgroundColor: feat.bgColor,
+                                color: feat.color,
+                                border: `1px solid ${feat.borderColor}`,
+                              }}
+                            >
+                              {feat.badge}
+                            </span>
+                          )}
+                          <ChevronRight
+                            className="w-4 h-4 text-slate-400 transition-transform duration-300"
+                            style={{ transform: isActive ? 'rotate(90deg)' : 'rotate(0deg)' }}
+                          />
+                        </div>
+                      </div>
+
+                      {/* Label */}
+                      <div
+                        className="text-[10px] font-semibold uppercase tracking-wider mb-1"
+                        style={{ color: feat.color }}
+                      >
+                        {feat.label}
+                      </div>
+
+                      {/* Title */}
+                      <h3 className="text-sm font-bold text-white mb-2">{feat.title}</h3>
+
+                      {/* Description */}
+                      <p className="text-xs text-slate-400 leading-relaxed min-h-[40px]">{feat.description}</p>
+                    </div>
+
+                    {/* Expandable bullets — CSS grid 0fr → 1fr transition for 60fps hardware-accelerated expansion */}
+                    <div
+                      className={`grid transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+                        isActive
+                          ? 'grid-rows-[1fr] opacity-100 mt-4 pt-4 border-t border-white/10'
+                          : 'grid-rows-[0fr] opacity-0 mt-0 pt-0 border-t-0 border-transparent pointer-events-none'
+                      }`}
+                    >
+                      <div className="overflow-hidden space-y-2">
+                        {feat.bullets.map(bullet => (
+                          <div key={bullet} className="flex items-start gap-2">
+                            <span
+                              className="w-1.5 h-1.5 rounded-full mt-1 flex-shrink-0"
+                              style={{ backgroundColor: feat.color }}
+                            />
+                            <span className="text-[11px] text-slate-300 leading-snug">{bullet}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
                 </button>
               </motion.div>
             );

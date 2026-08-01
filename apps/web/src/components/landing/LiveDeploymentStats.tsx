@@ -39,7 +39,7 @@ const services = [
 
 export default function LiveDeploymentStats() {
   return (
-    <section className="relative z-10 py-20 md:py-28 px-6 md:px-12 bg-[#F3F2EF]">
+    <section className="relative z-10 py-20 md:py-28 px-6 md:px-12 bg-transparent">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <motion.div
@@ -49,13 +49,13 @@ export default function LiveDeploymentStats() {
           className="mb-10"
         >
           <div className="flex items-center gap-2 mb-2">
-            <span className="text-xs font-mono uppercase tracking-widest text-[#9CA3AF]">Production</span>
-            <div className="h-px flex-1 bg-[#E2E0DC]" />
+            <span className="text-xs font-mono uppercase tracking-widest text-slate-400">Production</span>
+            <div className="h-px flex-1 bg-white/10" />
           </div>
-          <h2 className="text-2xl md:text-3xl font-bold text-[#111827] tracking-tight">
+          <h2 className="text-2xl md:text-3xl font-bold text-white tracking-tight">
             Infrastructure
           </h2>
-          <p className="text-[#6B7280] mt-1 text-sm">
+          <p className="text-slate-400 mt-1 text-sm">
             A distributed system, deployed across six production services.
           </p>
         </motion.div>
@@ -69,11 +69,11 @@ export default function LiveDeploymentStats() {
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.4, delay: gi * 0.07 }}
-              className="rounded-2xl bg-white border border-[#E2E0DC] overflow-hidden"
+              className="rounded-2xl bg-[#0F0F1A] border border-white/10 shadow-xl overflow-hidden"
             >
               {/* Group header */}
-              <div className="px-5 py-2.5 border-b border-[#F3F2EF] bg-[#FAFAF9]">
-                <span className="text-[10px] font-semibold text-[#9CA3AF] uppercase tracking-widest">
+              <div className="px-5 py-2.5 border-b border-white/10 bg-[#16162A]/70">
+                <span className="text-[10px] font-mono font-semibold text-slate-400 uppercase tracking-widest">
                   {group.group}
                 </span>
               </div>
@@ -83,7 +83,7 @@ export default function LiveDeploymentStats() {
                 <div
                   key={item.name}
                   className={`flex items-center gap-4 px-5 py-3.5 ${
-                    ii < group.items.length - 1 ? 'border-b border-[#F3F2EF]' : ''
+                    ii < group.items.length - 1 ? 'border-b border-white/5' : ''
                   }`}
                 >
                   {/* Status dot */}
@@ -92,18 +92,18 @@ export default function LiveDeploymentStats() {
                       <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
                       <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
                     </span>
-                    <span className="text-[10px] font-mono font-medium text-emerald-600">
+                    <span className="text-[10px] font-mono font-medium text-emerald-400">
                       {item.status}
                     </span>
                   </div>
 
                   {/* Service name */}
                   <div className="w-32 flex-shrink-0">
-                    <span className="text-sm font-semibold text-[#111827]">{item.name}</span>
+                    <span className="text-sm font-semibold text-white">{item.name}</span>
                   </div>
 
                   {/* Role */}
-                  <p className="text-xs text-[#6B7280] min-w-0 flex-1 leading-relaxed">
+                  <p className="text-xs text-slate-400 min-w-0 flex-1 leading-relaxed">
                     {item.role}
                   </p>
                 </div>

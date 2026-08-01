@@ -36,7 +36,7 @@ const actions = [
 
 export default function RecruiterCTA() {
   return (
-    <section className="relative z-10 py-20 md:py-28 px-6 md:px-12 bg-[#F8F7F4]">
+    <section className="relative z-10 py-20 md:py-28 px-6 md:px-12 bg-transparent">
       <div className="max-w-4xl mx-auto">
         {/* Heading */}
         <motion.div
@@ -45,13 +45,13 @@ export default function RecruiterCTA() {
           viewport={{ once: true }}
           className="text-center mb-10"
         >
-          <p className="text-xs text-[#9CA3AF] mb-3 font-mono tracking-wider uppercase">
+          <p className="text-xs text-slate-400 mb-3 font-mono tracking-wider uppercase">
             You&apos;re still here.
           </p>
-          <h2 className="text-3xl md:text-4xl font-bold text-[#111827] tracking-tight mb-3">
+          <h2 className="text-3xl md:text-4xl font-bold text-white tracking-tight mb-3">
             Let&apos;s make it worth your time.
           </h2>
-          <p className="text-[#6B7280] max-w-sm mx-auto text-sm">
+          <p className="text-slate-400 max-w-sm mx-auto text-sm">
             Explore the live product, read the code, or trace the architecture.
           </p>
         </motion.div>
@@ -72,15 +72,15 @@ export default function RecruiterCTA() {
               <motion.div
                 key={action.title}
                 variants={{ hidden: { opacity: 0, y: 16 }, visible: { opacity: 1, y: 0 } }}
-                className={`group rounded-2xl p-6 border transition-all duration-200 cursor-pointer h-full hover:shadow-sm ${
+                className={`group rounded-2xl p-6 border transition-all duration-200 cursor-pointer h-full ${
                   action.primary
-                    ? 'bg-[#4F46E5] border-[#4F46E5] hover:bg-[#4338CA]'
-                    : 'bg-white border-[#E2E0DC] hover:border-[#C7C5C0]'
+                    ? 'bg-indigo-600 border-indigo-500 hover:bg-indigo-500 shadow-xl'
+                    : 'bg-[#0F0F1A]/80 border-white/10 backdrop-blur-md hover:border-white/25 shadow-lg'
                 }`}
               >
                 <div
                   className={`w-10 h-10 rounded-xl flex items-center justify-center mb-4 transition-transform group-hover:scale-110 duration-200 ${
-                    action.primary ? 'bg-white/20' : 'bg-[#F8F7F4] border border-[#E2E0DC]'
+                    action.primary ? 'bg-white/20' : 'bg-white/5 border border-white/10'
                   }`}
                 >
                   <action.icon
