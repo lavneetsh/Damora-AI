@@ -19,7 +19,7 @@ const techStack = [
 ];
 
 const timeline = [
-  { year: '2024', label: 'Started building', detail: 'Chose the RAG stack — NestJS, Qdrant, Gemini' },
+  { year: '2025', label: 'Started building', detail: 'Chose the RAG stack — NestJS, Qdrant, Gemini' },
   { year: '→', label: 'Full Stack Development', detail: 'Auth, uploads, document processing, chat' },
   { year: '→', label: 'Production Deployment', detail: 'Render, Vercel, Neon, Upstash, R2, Qdrant Cloud' },
   { year: 'Now', label: 'Enterprise AI Focus', detail: 'Distributed systems · Background jobs · AI pipelines' },

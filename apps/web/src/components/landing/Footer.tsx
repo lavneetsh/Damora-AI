@@ -29,7 +29,7 @@ export default function Footer() {
           >
             GitHub
           </a>
-          <span>© 2024 Lavneet Sharma</span>
+          <span>© 2025 Lavneet Sharma</span>
         </div>
       </div>
     </footer>

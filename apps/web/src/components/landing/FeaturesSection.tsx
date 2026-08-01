@@ -190,7 +190,7 @@ export default function FeaturesSection() {
             hidden: { opacity: 0 },
             visible: { opacity: 1, transition: { staggerChildren: 0.06 } },
           }}
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 auto-rows-auto"
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 auto-rows-auto items-start"
         >
           {features.map((feat, i) => {
             const Icon = feat.icon;
@@ -201,15 +201,17 @@ export default function FeaturesSection() {
             return (
               <motion.div
                 key={feat.id}
+                layout
                 variants={{ hidden: { opacity: 0, y: 16 }, visible: { opacity: 1, y: 0 } }}
-                className={`${isWide ? 'sm:col-span-2' : 'col-span-1'}`}
+                className={`${isWide ? 'sm:col-span-2' : 'col-span-1'} self-start`}
               >
                 <button
                   onClick={() => setActiveFeature(isActive ? null : feat.id)}
-                  className="w-full text-left h-full"
+                  className="w-full text-left block"
                 >
-                  <div
-                    className={`h-full rounded-2xl border p-5 transition-all duration-200 cursor-pointer bg-white ${
+                  <motion.div
+                    layout
+                    className={`rounded-2xl border p-5 transition-all duration-200 cursor-pointer bg-white ${
                       isActive
                         ? 'shadow-md scale-[1.01]'
                         : 'hover:shadow-sm hover:border-[#C7C5C0]'
@@ -262,14 +264,14 @@ export default function FeaturesSection() {
                     <p className="text-xs text-[#6B7280] leading-relaxed">{feat.description}</p>
 
                     {/* Expandable bullets */}
-                    <AnimatePresence>
+                    <AnimatePresence initial={false}>
                       {isActive && (
                         <motion.div
                           initial={{ opacity: 0, height: 0 }}
                           animate={{ opacity: 1, height: 'auto' }}
                           exit={{ opacity: 0, height: 0 }}
-                          transition={{ duration: 0.2 }}
-                          className="mt-4 pt-4 border-t space-y-2"
+                          transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+                          className="mt-4 pt-4 border-t space-y-2 overflow-hidden"
                           style={{ borderColor: feat.borderColor }}
                         >
                           {feat.bullets.map(bullet => (
@@ -284,7 +286,7 @@ export default function FeaturesSection() {
                         </motion.div>
                       )}
                     </AnimatePresence>
-                  </div>
+                  </motion.div>
                 </button>
               </motion.div>
             );
