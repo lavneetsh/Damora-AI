@@ -216,13 +216,13 @@ export default function ArchitectureExplorer() {
           </p>
         </motion.div>
 
-        {/* Graph */}
+        {/* Graph — overflow:visible so edge-node tooltips aren't clipped */}
         <motion.div
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
-          className="relative w-full bg-white/70 backdrop-blur-sm rounded-2xl border border-[#BFDBFE] shadow-sm overflow-hidden"
-          style={{ minHeight: 540 }}
+          className="relative w-full bg-white/70 backdrop-blur-sm rounded-2xl border border-[#BFDBFE] shadow-sm"
+          style={{ minHeight: 580, overflow: 'visible' }}
         >
           {/* SVG edges */}
           <svg
@@ -273,6 +273,11 @@ export default function ArchitectureExplorer() {
             const isLit = litNodes.has(node.id);
             const isDimmed = hoveredNode !== null && !isHovered && !isLit;
 
+            // Smart tooltip direction: flip based on proximity to edges
+            const flipUp = node.y > 72;        // near bottom → tooltip expands UP
+            const flipLeft = node.x > 68;      // near right  → tooltip anchors right
+            const flipRight = node.x < 22;     // near left   → tooltip anchors left
+
             return (
               <motion.div
                 key={node.id}
@@ -296,8 +301,9 @@ export default function ArchitectureExplorer() {
                   if (node.id === 'nextjs') resetPacket();
                 }}
               >
+                {/* Node chip */}
                 <div
-                  className={`rounded-2xl border px-3 py-2.5 bg-white transition-all duration-200 cursor-default whitespace-nowrap ${
+                  className={`rounded-2xl border px-3 py-2.5 bg-white transition-all duration-200 cursor-default whitespace-nowrap relative ${
                     isHovered
                       ? 'shadow-lg scale-105'
                       : isLit
@@ -313,34 +319,55 @@ export default function ArchitectureExplorer() {
                     <span className="text-sm">{node.icon}</span>
                     <span className="text-xs font-semibold text-[#111827]">{node.label}</span>
                   </div>
-
-                  <AnimatePresence>
-                    {isHovered && (
-                      <motion.div
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: 'auto' }}
-                        exit={{ opacity: 0, height: 0 }}
-                        transition={{ duration: 0.15 }}
-                        className="mt-2 pt-2 border-t border-[#F3F2EF] min-w-[160px]"
-                      >
-                        {node.purpose.map(p => (
-                          <div key={p} className="flex items-start gap-1.5 mb-1">
-                            <span
-                              className="w-1.5 h-1.5 rounded-full mt-1 flex-shrink-0"
-                              style={{ backgroundColor: node.color }}
-                            />
-                            <span className="text-[11px] text-[#374151] leading-tight">{p}</span>
-                          </div>
-                        ))}
-                        {node.detail && (
-                          <p className="text-[10px] font-mono text-[#9CA3AF] mt-1.5 pt-1.5 border-t border-[#F3F2EF]">
-                            {node.detail}
-                          </p>
-                        )}
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
                 </div>
+
+                {/* Tooltip — rendered as absolutely positioned sibling so it never clips */}
+                <AnimatePresence>
+                  {isHovered && (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.95 }}
+                      transition={{ duration: 0.15 }}
+                      className="absolute z-50 min-w-[180px] bg-white rounded-2xl border shadow-xl p-3"
+                      style={{
+                        borderColor: node.color,
+                        boxShadow: `0 8px 32px ${node.color}20, 0 2px 8px rgba(0,0,0,0.08)`,
+                        // Vertical: above or below the chip
+                        ...(flipUp
+                          ? { bottom: 'calc(100% + 8px)', top: 'auto' }
+                          : { top: 'calc(100% + 8px)', bottom: 'auto' }),
+                        // Horizontal: anchor based on edge proximity
+                        ...(flipLeft
+                          ? { right: 0, left: 'auto' }
+                          : flipRight
+                          ? { left: 0, right: 'auto' }
+                          : { left: '50%', transform: 'translateX(-50%)' }),
+                      }}
+                    >
+                      <div
+                        className="text-[10px] font-semibold uppercase tracking-wider mb-2"
+                        style={{ color: node.color }}
+                      >
+                        {node.label}
+                      </div>
+                      {node.purpose.map(p => (
+                        <div key={p} className="flex items-start gap-1.5 mb-1.5">
+                          <span
+                            className="w-1.5 h-1.5 rounded-full mt-0.5 flex-shrink-0"
+                            style={{ backgroundColor: node.color }}
+                          />
+                          <span className="text-[11px] text-[#374151] leading-snug">{p}</span>
+                        </div>
+                      ))}
+                      {node.detail && (
+                        <p className="text-[10px] font-mono text-[#9CA3AF] mt-2 pt-2 border-t border-[#F3F2EF]">
+                          {node.detail}
+                        </p>
+                      )}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </motion.div>
             );
           })}

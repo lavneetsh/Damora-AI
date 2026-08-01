@@ -172,7 +172,8 @@ export default function EmbeddingClusters({ heroQuery, querySubmitted }: Embeddi
             initial={{ opacity: 0, scale: 0.95 }}
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
-            className="flex-1 w-full rounded-2xl border border-[#E2E0DC] bg-white overflow-hidden shadow-sm"
+            className="flex-1 w-full rounded-2xl border border-[#E2E0DC] overflow-hidden shadow-sm"
+            style={{ background: 'linear-gradient(135deg, #1E1B4B 0%, #312E81 50%, #1E3A5F 100%)' }}
           >
             <svg
               viewBox={`0 0 ${canvasWidth} ${canvasHeight}`}
@@ -189,14 +190,14 @@ export default function EmbeddingClusters({ heroQuery, querySubmitted }: Embeddi
                     key={dot.id}
                     cx={(dot.x / 100) * canvasWidth}
                     cy={(dot.y / 100) * canvasHeight}
-                    r={isActive ? 4 : 2.5}
+                    r={isActive ? 6 : 4.5}
                     fill={cluster.color}
-                    opacity={isDimmed ? 0.12 : isActive ? 0.9 : 0.35}
+                    opacity={isDimmed ? 0.2 : isActive ? 1 : 0.7}
                     animate={{
                       cx: (dot.x / 100) * canvasWidth,
                       cy: (dot.y / 100) * canvasHeight,
-                      r: isActive ? 4 : 2.5,
-                      opacity: isDimmed ? 0.12 : isActive ? 0.9 : 0.35,
+                      r: isActive ? 6 : 4.5,
+                      opacity: isDimmed ? 0.2 : isActive ? 1 : 0.7,
                     }}
                     transition={{ duration: 0.6, ease: [0.34, 1.56, 0.64, 1] }}
                   />
@@ -211,9 +212,9 @@ export default function EmbeddingClusters({ heroQuery, querySubmitted }: Embeddi
                   x={(CLUSTERS[activeCluster].cx / 100) * canvasWidth}
                   y={(CLUSTERS[activeCluster].cy / 100) * canvasHeight - 35}
                   textAnchor="middle"
-                  fontSize="11"
-                  fontWeight="600"
-                  fill={CLUSTERS[activeCluster].color}
+                  fontSize="12"
+                  fontWeight="700"
+                  fill="#FFFFFF"
                   fontFamily="Inter, system-ui"
                 >
                   {CLUSTERS[activeCluster].name}

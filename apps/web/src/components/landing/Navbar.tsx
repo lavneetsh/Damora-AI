@@ -39,6 +39,7 @@ export default function Navbar() {
         {/* Nav links */}
         <div className="hidden md:flex items-center gap-7 text-sm text-[#6B7280]">
           {[
+            { label: 'Features', href: '#features' },
             { label: 'How It Works', href: '#demo' },
             { label: 'Architecture', href: '#architecture' },
             { label: 'Engineering', href: '#engineering' },

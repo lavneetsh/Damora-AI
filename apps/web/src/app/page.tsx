@@ -6,6 +6,7 @@ import HeroSection from '@/components/landing/HeroSection';
 import EmbeddingClusters from '@/components/landing/EmbeddingClusters';
 import ArchitectureExplorer from '@/components/landing/ArchitectureExplorer';
 import StreamingChat from '@/components/landing/StreamingChat';
+import FeaturesSection from '@/components/landing/FeaturesSection';
 import LiveDeploymentStats from '@/components/landing/LiveDeploymentStats';
 import EngineeringDecisions from '@/components/landing/EngineeringDecisions';
 import BuiltBySection from '@/components/landing/BuiltBySection';
@@ -53,6 +54,7 @@ export default function LandingPage() {
 
       {/* Act 3: The Answer */}
       <StreamingChat heroQuery={heroQuery} querySubmitted={querySubmitted} />
+      <FeaturesSection />
       <LiveDeploymentStats />
 
       {/* Act 4: The Engineer */}
