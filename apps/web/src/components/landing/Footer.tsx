@@ -5,9 +5,11 @@ export default function Footer() {
     <footer className="relative z-10 border-t border-white/10 py-8 px-6 bg-[#09090F]/90 backdrop-blur-md">
       <div className="max-w-4xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
         <div className="flex items-center gap-2.5">
-          <div className="w-5 h-5 rounded bg-indigo-600 flex items-center justify-center text-white text-[10px] font-black shadow-md">
-            D
-          </div>
+          <img
+            src="/logo.png"
+            alt="Damora AI Logo"
+            className="w-5 h-5 rounded object-cover shadow-sm"
+          />
           <span className="text-sm font-bold text-white">Damora AI</span>
           <span className="text-xs text-slate-400 font-mono ml-1">Private AI Workspace</span>
         </div>

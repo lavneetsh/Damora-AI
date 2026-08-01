@@ -28,9 +28,11 @@ export default function Navbar() {
       <div className="max-w-6xl mx-auto flex items-center justify-between px-6 md:px-12 py-4">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2.5 group">
-          <div className="w-7 h-7 rounded-lg bg-indigo-600 flex items-center justify-center text-white text-xs font-black shadow-lg">
-            D
-          </div>
+          <img
+            src="/logo.png"
+            alt="Damora AI Logo"
+            className="w-7 h-7 rounded-lg object-cover shadow-lg group-hover:scale-105 transition-transform duration-200"
+          />
           <span className="text-sm font-bold tracking-tight text-white">
             Damora AI
           </span>

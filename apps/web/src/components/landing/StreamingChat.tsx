@@ -151,9 +151,11 @@ export default function StreamingChat({ heroQuery, querySubmitted }: StreamingCh
 
             {/* AI response */}
             <div className="flex gap-3">
-              <div className="w-7 h-7 rounded-full bg-[#4F46E5] flex items-center justify-center flex-shrink-0 text-[10px] font-bold text-white">
-                D
-              </div>
+              <img
+                src="/logo.png"
+                alt="Damora AI Avatar"
+                className="w-7 h-7 rounded-full object-cover flex-shrink-0 shadow-md"
+              />
               <div className="flex-1">
                 <div className="text-[10px] text-[#9CA3AF] mb-1 font-medium">Damora AI</div>
                 <div className="text-sm text-[#374151] leading-relaxed">
