@@ -62,7 +62,7 @@ export class GeminiEmbeddingProvider implements IEmbeddingProvider {
       const result = await model.batchEmbedContents({
         requests: texts.map((text) => ({
           content: { role: 'user', parts: [{ text }] },
-          model: 'models/gemini-embedding-001',
+          model: 'gemini-embedding-001',
           outputDimensionality: 768,
         }) as any),
       });

@@ -76,6 +76,9 @@ import { LoggerMiddleware } from './common/middleware/logger.middleware';
                 tls: {
                   rejectUnauthorized: false,
                 },
+                enableReadyCheck: false,
+                maxRetriesPerRequest: null,
+                keepAlive: 10000,
               },
             };
           } catch {
