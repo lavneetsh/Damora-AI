@@ -9,7 +9,7 @@ import { PrismaService } from '../../database/prisma.service';
 import { StorageService } from '../storage/storage.service';
 import { ProcessingService } from '../processing/processing.service';
 import { TextExtractorService } from '../processing/text-extractor.service';
-import { VectorStoreService } from '../vector-store/vector-store.service';
+import { VectorStoreService, VectorPoint } from '../vector-store/vector-store.service';
 import { EmbeddingsService } from '../ai/services/embeddings.service';
 import { AnalyticsService } from '../analytics/analytics.service';
 
@@ -155,8 +155,8 @@ export class DocumentsService {
     try {
       this.logger.log(`⚙️ Starting inline self-healing processing for doc: ${doc.name} (${documentId})`);
 
-      // 1. Download buffer
-      const fileBuffer = await this.storage.downloadFile(doc.s3Key);
+      // 1. Download buffer with retry for transient network hiccups
+      const fileBuffer = await this.withRetry(() => this.storage.downloadFile(doc.s3Key));
 
       // 2. Extract text & pages
       let { fullText, pageTexts } = await this.textExtractor.extractWithPages(fileBuffer, doc.mimeType);
@@ -184,11 +184,13 @@ export class DocumentsService {
       const dimensions = this.embeddings.getDimensions();
       await this.vectorStore.ensureCollection(collectionName, dimensions);
 
-      // 5. Batch Embed & Upsert
+      // 5. Batch Embed & Upsert with retry
       const texts = chunks.map((c) => c.content);
-      const embeddings = await this.embeddings.embedBatch(texts, { workspaceId: doc.workspaceId });
+      const embeddings = await this.withRetry(() =>
+        this.embeddings.embedBatch(texts, { workspaceId: doc.workspaceId }),
+      );
 
-      const points = [];
+      const points: VectorPoint[] = [];
       const chunkRecords = [];
       const crypto = require('crypto');
 
@@ -224,7 +226,7 @@ export class DocumentsService {
         });
       }
 
-      await this.vectorStore.upsertPoints(collectionName, points);
+      await this.withRetry(() => this.vectorStore.upsertPoints(collectionName, points));
 
       await this.prisma.documentChunk.deleteMany({ where: { documentId: doc.id } });
       await this.prisma.documentChunk.createMany({ data: chunkRecords });
@@ -515,5 +517,21 @@ export class DocumentsService {
       'text/x-markdown': '.md',
     };
     return mimeExtMap[mimeType] ?? '.bin';
+  }
+
+  private async withRetry<T>(fn: () => Promise<T>, retries = 3, delayMs = 2000): Promise<T> {
+    let lastError: any;
+    for (let attempt = 1; attempt <= retries; attempt++) {
+      try {
+        return await fn();
+      } catch (err) {
+        lastError = err;
+        this.logger.warn(`Network operation attempt ${attempt}/${retries} failed: ${err.message}. Retrying in ${delayMs * attempt}ms...`);
+        if (attempt < retries) {
+          await new Promise((res) => setTimeout(res, delayMs * attempt));
+        }
+      }
+    }
+    throw lastError;
   }
 }
