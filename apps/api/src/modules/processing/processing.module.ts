@@ -29,6 +29,6 @@ import { DocumentProcessorConsumer } from './document-processor.consumer';
     ProcessingService,
     DocumentProcessorConsumer,
   ],
-  exports: [ProcessingService],
+  exports: [ProcessingService, TextExtractorService],
 })
 export class ProcessingModule {}

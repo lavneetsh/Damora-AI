@@ -34,6 +34,7 @@ export class DocumentsService {
     private readonly prisma: PrismaService,
     private readonly storage: StorageService,
     private readonly processing: ProcessingService,
+    private readonly textExtractor: TextExtractorService,
     private readonly vectorStore: VectorStoreService,
     private readonly embeddings: EmbeddingsService,
     private readonly analytics: AnalyticsService,
@@ -68,8 +69,8 @@ export class DocumentsService {
     const docId = `doc_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
     const s3Key = `workspaces/${workspaceId}/docs/${docId}${ext}`;
 
-    // 5. Upload to MinIO
-    this.logger.log(`⬆️  Uploading ${file.originalname} to MinIO: ${s3Key}`);
+    // 5. Upload to Storage
+    this.logger.log(`⬆️  Uploading ${file.originalname} to Storage: ${s3Key}`);
     await this.storage.uploadFile(s3Key, file.buffer, file.mimetype);
 
     // 6. Create Document record in PostgreSQL (status = PENDING)
@@ -93,17 +94,29 @@ export class DocumentsService {
       },
     });
 
-    // 7. Enqueue background processing job (async — returns immediately)
-    await this.processing.enqueueDocument({
-      documentId: docId,
-      workspaceId,
-      s3Key,
-      mimeType: file.mimetype,
-      documentName: cleanName,
+    // 7. Enqueue to BullMQ queue
+    try {
+      await this.processing.enqueueDocument({
+        documentId: docId,
+        workspaceId,
+        s3Key,
+        mimeType: file.mimetype,
+        documentName: cleanName,
+      });
+    } catch (err) {
+      this.logger.error(`Failed to enqueue job to BullMQ: ${err}`);
+    }
+
+    // 8. Self-healing fallback: Trigger immediate background processing
+    // Guarantees document transitions PENDING -> READY even if Redis/BullMQ is delayed
+    setImmediate(() => {
+      this.processDocumentDirectly(docId).catch((err) =>
+        this.logger.error(`Inline document processing error for ${docId}: ${err}`),
+      );
     });
 
     this.logger.log(
-      `✅ Document uploaded and queued: ${cleanName} (${docId})`,
+      `✅ Document uploaded and processing initiated: ${cleanName} (${docId})`,
     );
 
     // Log upload analytics event in the background (async)
@@ -116,6 +129,127 @@ export class DocumentsService {
     }).catch((err) => this.logger.error(`Failed to log upload analytics: ${err}`));
 
     return document;
+  }
+
+  /**
+   * Self-healing background processor for uploaded documents.
+   * Atomically transitions PENDING -> PROCESSING -> READY.
+   */
+  async processDocumentDirectly(documentId: string): Promise<void> {
+    const doc = await this.prisma.document.findUnique({
+      where: { id: documentId },
+    });
+
+    if (!doc || doc.status !== 'PENDING') {
+      return; // Already processed or processing by BullMQ consumer
+    }
+
+    // Atomic update to PROCESSING to prevent duplicate processing race conditions
+    const updated = await this.prisma.document.updateMany({
+      where: { id: documentId, status: 'PENDING' },
+      data: { status: 'PROCESSING' },
+    });
+
+    if (updated.count === 0) return;
+
+    try {
+      this.logger.log(`⚙️ Starting inline self-healing processing for doc: ${doc.name} (${documentId})`);
+
+      // 1. Download buffer
+      const fileBuffer = await this.storage.downloadFile(doc.s3Key);
+
+      // 2. Extract text & pages
+      let { fullText, pageTexts } = await this.textExtractor.extractWithPages(fileBuffer, doc.mimeType);
+      let extractionMethod = 'TEXT_EXTRACTION';
+
+      if (doc.mimeType === 'application/pdf' && (!fullText || fullText.trim().length < 300)) {
+        const ocrResult = await this.textExtractor.extractOcrWithPages(fileBuffer);
+        fullText = ocrResult.fullText;
+        pageTexts = ocrResult.pageTexts;
+        extractionMethod = 'OCR';
+      }
+
+      if (!fullText || fullText.trim().length === 0) {
+        throw new Error('No text could be extracted from document');
+      }
+
+      // 3. Chunk
+      const chunks = this.textExtractor.chunkWithPages(pageTexts, 200, 30);
+      if (chunks.length === 0) {
+        throw new Error('Document produced zero chunks after splitting');
+      }
+
+      // 4. Ensure Qdrant collection
+      const collectionName = `${COLLECTION_PREFIX}-${doc.workspaceId}`;
+      const dimensions = this.embeddings.getDimensions();
+      await this.vectorStore.ensureCollection(collectionName, dimensions);
+
+      // 5. Batch Embed & Upsert
+      const texts = chunks.map((c) => c.content);
+      const embeddings = await this.embeddings.embedBatch(texts, { workspaceId: doc.workspaceId });
+
+      const points = [];
+      const chunkRecords = [];
+      const crypto = require('crypto');
+
+      for (let i = 0; i < chunks.length; i++) {
+        const chunk = chunks[i];
+        const vector = embeddings[i];
+        const qdrantPointId = `${doc.id}-chunk-${i}`;
+        const pointUuid = crypto
+          .createHash('md5')
+          .update(qdrantPointId)
+          .digest('hex')
+          .replace(/(.{8})(.{4})(.{4})(.{4})(.{12})/, '$1-$2-$3-$4-$5');
+
+        points.push({
+          id: pointUuid,
+          vector,
+          payload: {
+            workspaceId: doc.workspaceId,
+            documentId: doc.id,
+            chunkIndex: i,
+            pageNumber: chunk.pageNumber,
+            content: chunk.content,
+            tokenCount: chunk.tokenCount,
+          },
+        });
+
+        chunkRecords.push({
+          documentId: doc.id,
+          chunkIndex: i,
+          content: chunk.content,
+          tokenCount: chunk.tokenCount,
+          qdrantId: pointUuid,
+        });
+      }
+
+      await this.vectorStore.upsertPoints(collectionName, points);
+
+      await this.prisma.documentChunk.deleteMany({ where: { documentId: doc.id } });
+      await this.prisma.documentChunk.createMany({ data: chunkRecords });
+
+      await this.prisma.document.update({
+        where: { id: doc.id },
+        data: {
+          status: 'READY',
+          pageCount: pageTexts.length,
+          extractionMethod,
+          errorMessage: null,
+        },
+      });
+
+      this.logger.log(`🎉 Self-healing inline processing completed for ${doc.name}: ${chunks.length} chunks READY`);
+    } catch (err) {
+      this.logger.error(`❌ Self-healing inline processing failed for ${documentId}: ${err.message}`);
+      await this.prisma.document.update({
+        where: { id: documentId },
+        data: {
+          status: 'FAILED',
+          errorMessage: err.message,
+        },
+      });
+    }
   }
 
   // ─── List Documents ───────────────────────────────────────────────────────
