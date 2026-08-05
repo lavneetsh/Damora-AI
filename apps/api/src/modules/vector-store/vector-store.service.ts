@@ -96,6 +96,21 @@ export class VectorStoreService implements OnModuleInit {
       });
       this.logger.log(`✅ Created Qdrant collection "${collectionName}"`);
     }
+
+    // Ensure payload keyword indexes exist for fast multi-tenant workspace filtering
+    try {
+      await this.client.createPayloadIndex(collectionName, {
+        field_name: 'workspaceId',
+        field_schema: 'keyword',
+      });
+    } catch {}
+
+    try {
+      await this.client.createPayloadIndex(collectionName, {
+        field_name: 'documentId',
+        field_schema: 'keyword',
+      });
+    } catch {}
   }
 
   // ─── Upsert Points ────────────────────────────────────────────────────────
