@@ -58,20 +58,28 @@ export class GeminiEmbeddingProvider implements IEmbeddingProvider {
     try {
       this.logger.debug(`Generating batch embeddings for ${texts.length} texts`);
       const model = genAI.getGenerativeModel({ model: 'gemini-embedding-001' });
-      
-      const result = await model.batchEmbedContents({
-        requests: texts.map((text) => ({
-          content: { role: 'user', parts: [{ text }] },
-          model: 'gemini-embedding-001',
-          outputDimensionality: 768,
-        }) as any),
-      });
 
-      if (!result.embeddings || result.embeddings.length === 0) {
-        throw new Error('Failed to retrieve batch embeddings from Gemini API response');
+      const BATCH_SIZE = 20;
+      const allEmbeddings: number[][] = [];
+
+      for (let i = 0; i < texts.length; i += BATCH_SIZE) {
+        const chunk = texts.slice(i, i + BATCH_SIZE);
+        const result = await model.batchEmbedContents({
+          requests: chunk.map((text) => ({
+            content: { role: 'user', parts: [{ text }] },
+            model: 'gemini-embedding-001',
+            outputDimensionality: 768,
+          }) as any),
+        });
+
+        if (!result.embeddings || result.embeddings.length === 0) {
+          throw new Error('Failed to retrieve batch embeddings from Gemini API response');
+        }
+
+        allEmbeddings.push(...result.embeddings.map((e) => e.values));
       }
 
-      return result.embeddings.map((e) => e.values);
+      return allEmbeddings;
     } catch (err) {
       this.logger.error(`Failed to generate Gemini batch embeddings: ${err}`);
       throw err;

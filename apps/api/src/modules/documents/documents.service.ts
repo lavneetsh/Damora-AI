@@ -107,13 +107,17 @@ export class DocumentsService {
       this.logger.error(`Failed to enqueue job to BullMQ: ${err}`);
     }
 
-    // 8. Process document synchronously before returning HTTP response.
-    // Prevents serverless/Render container event-loop freezing during unhandled async tasks.
-    try {
-      await this.processDocumentDirectly(docId);
-    } catch (err) {
-      this.logger.error(`Inline document processing error for ${docId}: ${err}`);
-    }
+    // 8. Trigger self-healing background processing.
+    // Wait up to 4s for fast completion (small files become READY in < 2s).
+    // For large files (> 20 pages), returns PENDING in 4s to prevent Vercel 30s gateway timeouts.
+    const processingPromise = this.processDocumentDirectly(docId).catch((err) =>
+      this.logger.error(`Inline document processing error for ${docId}: ${err}`),
+    );
+
+    await Promise.race([
+      processingPromise,
+      new Promise((resolve) => setTimeout(resolve, 4000)),
+    ]);
 
     const finalDocument = await this.prisma.document.findUnique({
       where: { id: docId },
@@ -125,7 +129,7 @@ export class DocumentsService {
     });
 
     this.logger.log(
-      `✅ Document uploaded and processed: ${cleanName} (${docId}) -> Status: ${finalDocument?.status}`,
+      `✅ Document uploaded: ${cleanName} (${docId}) -> Current Status: ${finalDocument?.status}`,
     );
 
     // Log upload analytics event in the background (async)
