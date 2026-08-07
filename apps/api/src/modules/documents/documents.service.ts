@@ -107,16 +107,25 @@ export class DocumentsService {
       this.logger.error(`Failed to enqueue job to BullMQ: ${err}`);
     }
 
-    // 8. Self-healing fallback: Trigger immediate background processing
-    // Guarantees document transitions PENDING -> READY even if Redis/BullMQ is delayed
-    setImmediate(() => {
-      this.processDocumentDirectly(docId).catch((err) =>
-        this.logger.error(`Inline document processing error for ${docId}: ${err}`),
-      );
+    // 8. Process document synchronously before returning HTTP response.
+    // Prevents serverless/Render container event-loop freezing during unhandled async tasks.
+    try {
+      await this.processDocumentDirectly(docId);
+    } catch (err) {
+      this.logger.error(`Inline document processing error for ${docId}: ${err}`);
+    }
+
+    const finalDocument = await this.prisma.document.findUnique({
+      where: { id: docId },
+      include: {
+        uploadedBy: {
+          select: { id: true, name: true, email: true },
+        },
+      },
     });
 
     this.logger.log(
-      `✅ Document uploaded and processing initiated: ${cleanName} (${docId})`,
+      `✅ Document uploaded and processed: ${cleanName} (${docId}) -> Status: ${finalDocument?.status}`,
     );
 
     // Log upload analytics event in the background (async)
@@ -128,7 +137,7 @@ export class DocumentsService {
       isSuccess: true,
     }).catch((err) => this.logger.error(`Failed to log upload analytics: ${err}`));
 
-    return document;
+    return finalDocument || document;
   }
 
   /**
