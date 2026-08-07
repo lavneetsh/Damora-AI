@@ -8,7 +8,7 @@ const API_BASE_URL =
 export const apiClient: AxiosInstance = axios.create({
   baseURL: API_BASE_URL,
   headers: { 'Content-Type': 'application/json' },
-  timeout: 30000,
+  timeout: 120000,
 });
 
 // ─── Request Interceptor: Attach Access Token ─────────────────────────────────

@@ -101,11 +101,15 @@ export default function DocumentsPage() {
       // Start polling for the new PENDING document
       startPolling(activeWorkspaceId);
     } catch (err: unknown) {
-      const resData = (err as { response?: { data?: { message?: string | string[] } } })?.response?.data;
-      const rawMessage = resData?.message;
-      const message = Array.isArray(rawMessage)
+      const errObj = err as { code?: string; message?: string; response?: { data?: { message?: string | string[] } } };
+      const rawMessage = errObj.response?.data?.message;
+      let message = Array.isArray(rawMessage)
         ? rawMessage.join(', ')
-        : (typeof rawMessage === 'string' ? rawMessage : (err as { message?: string })?.message || 'Upload failed. Please try again.');
+        : (typeof rawMessage === 'string' ? rawMessage : errObj.message || 'Upload failed. Please try again.');
+
+      if (errObj.code === 'ECONNABORTED' || message.includes('timeout')) {
+        message = 'Connection timed out while server was waking up (Render cold start). Please try uploading again.';
+      }
       setUploadError(message);
     }
   };

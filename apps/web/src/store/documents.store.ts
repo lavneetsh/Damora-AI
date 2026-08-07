@@ -72,6 +72,7 @@ export const useDocumentsStore = create<DocumentsState>()((set, get) => ({
         `/workspaces/${workspaceId}/documents`,
         formData,
         {
+          timeout: 180000, // 3 minutes for upload and cold starts
           onUploadProgress: (progressEvent) => {
             if (progressEvent.total) {
               const pct = Math.round(
