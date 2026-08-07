@@ -1,7 +1,7 @@
 import axios, { AxiosInstance, AxiosError } from 'axios';
 
 const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001/api';
+  process.env.NEXT_PUBLIC_API_URL || 'https://damora-api.onrender.com/api';
 
 // ─── Create Axios Instance ────────────────────────────────────────────────────
 
@@ -20,6 +20,13 @@ apiClient.interceptors.request.use((config) => {
       config.headers.Authorization = `Bearer ${token}`;
     }
   }
+
+  // If payload is FormData, remove hardcoded application/json Content-Type
+  // so the browser automatically sets 'multipart/form-data; boundary=...'
+  if (typeof FormData !== 'undefined' && config.data instanceof FormData) {
+    delete config.headers['Content-Type'];
+  }
+
   return config;
 });
 

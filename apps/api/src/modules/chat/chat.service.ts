@@ -323,8 +323,23 @@ export class ChatService {
         content: m.content,
       }));
 
-    // 5. Construct RAG Context Prompt
-    let contextBlock = 'No document context available. Answer using your general knowledge.';
+    // 5. Fetch active workspace documents summary for metadata queries
+    const activeDocs = await this.prisma.document.findMany({
+      where: { workspaceId, status: 'READY' },
+      select: {
+        originalName: true,
+        name: true,
+        pageCount: true,
+        _count: { select: { chunks: true } },
+      },
+    });
+
+    const activeDocsSummary = activeDocs.length > 0
+      ? activeDocs.map((d) => `- ${d.originalName || d.name} (${d._count.chunks} chunks, ${d.pageCount || 1} pages)`).join('\n')
+      : 'No ready documents currently uploaded in this workspace.';
+
+    // 6. Construct RAG Context Prompt
+    let contextBlock = 'No specific document snippet context retrieved.';
     if (retrievedChunks.length > 0) {
       contextBlock = retrievedChunks
         .map((chunk) => {
@@ -337,12 +352,15 @@ export class ChatService {
     const systemPrompt = `You are Damora AI, an advanced AI corporate assistant.
 Your goal is to answer questions grounded in company documents.
 
+AVAILABLE WORKSPACE DOCUMENTS:
+${activeDocsSummary}
+
 CRITICAL INSTRUCTIONS:
-- You MUST answer the query using ONLY the provided document context below.
-- If the answer cannot be found or inferred from the document context, state: "I'm sorry, but I cannot find that information in the uploaded documents."
-- Do NOT make up information or use general knowledge beyond what is in the document context.
+- Answer specific questions using the provided document context below.
+- If the user asks general questions about what documents are available in the workspace or what files are uploaded, answer using the AVAILABLE WORKSPACE DOCUMENTS list above.
+- If a question cannot be answered from either the document context or the workspace documents list, state: "I'm sorry, but I cannot find that information in the uploaded documents."
 - Keep responses professional, clear, and structured (use bullet points if helpful).
-- Cite your sources using the exact document names mentioned in the context (e.g. "[Source: DocumentName.pdf]").
+- Cite your sources using exact document names (e.g. "[Source: DocumentName.pdf]").
 
 ---
 DOCUMENT CONTEXT:

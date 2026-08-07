@@ -21,9 +21,12 @@ export default function LoginPage() {
       toast.success('Welcome back!');
       router.push('/dashboard');
     } catch (err: unknown) {
+      const axiosErr = err as { response?: { data?: { message?: string } }; message?: string };
       const message =
-        (err as { response?: { data?: { message?: string } } })?.response?.data?.message ??
-        'Invalid credentials. Please try again.';
+        axiosErr.response?.data?.message ??
+        (axiosErr.response
+          ? 'Invalid credentials. Please try again.'
+          : 'Unable to connect to backend API server. Please check if local NestJS server is running or configure NEXT_PUBLIC_API_URL.');
       toast.error(message);
     }
   };
