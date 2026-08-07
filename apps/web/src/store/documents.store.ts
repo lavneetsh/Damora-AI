@@ -72,7 +72,6 @@ export const useDocumentsStore = create<DocumentsState>()((set, get) => ({
         `/workspaces/${workspaceId}/documents`,
         formData,
         {
-          headers: { 'Content-Type': 'multipart/form-data' },
           onUploadProgress: (progressEvent) => {
             if (progressEvent.total) {
               const pct = Math.round(

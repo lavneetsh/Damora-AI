@@ -101,9 +101,11 @@ export default function DocumentsPage() {
       // Start polling for the new PENDING document
       startPolling(activeWorkspaceId);
     } catch (err: unknown) {
-      const message =
-        (err as { response?: { data?: { message?: string } } })?.response
-          ?.data?.message ?? 'Upload failed. Please try again.';
+      const resData = (err as { response?: { data?: { message?: string | string[] } } })?.response?.data;
+      const rawMessage = resData?.message;
+      const message = Array.isArray(rawMessage)
+        ? rawMessage.join(', ')
+        : (typeof rawMessage === 'string' ? rawMessage : (err as { message?: string })?.message || 'Upload failed. Please try again.');
       setUploadError(message);
     }
   };
